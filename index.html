@@ -1,1 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DrivePK Bolo App V2</title>
+  <meta name="description" content="DrivePK Bolo App V2 - clean POST VEHICLE flow using server transcription." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <noscript>
+    <div class="noscript">This app needs JavaScript enabled.</div>
+  </noscript>
+
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="brand-mark">D</div>
+      <div>
+        <p class="eyebrow">Pakistan drives with DrivePK</p>
+        <h1>DrivePK Bolo</h1>
+      </div>
+    </div>
+    <div class="status-pill" id="appStatus">V2 Testing</div>
+  </header>
+
+  <main class="app-shell">
+    <nav class="main-nav" aria-label="Main navigation">
+      <button class="nav-btn active" data-section="homeSection" type="button">Home</button>
+      <button class="nav-btn" data-section="profileSection" type="button">Profile</button>
+      <button class="nav-btn" data-section="postSection" type="button">Post Vehicle</button>
+      <button class="nav-btn" data-section="searchSection" type="button">Search</button>
+    </nav>
+
+    <section class="notice hidden" id="lockNotice" role="alert"></section>
+
+    <section class="section active" id="homeSection">
+      <div class="hero-card">
+        <p class="eyebrow">Clean V2 Build</p>
+        <h2>POST VEHICLE uses server transcription only.</h2>
+        <p>No unstable Android browser SpeechRecognition is used for posting. Audio is recorded and sent to your Bluehost transcription endpoint.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" id="goPostBtn" type="button">Post Vehicle</button>
+          <button class="secondary-btn" id="goProfileBtn" type="button">Save Profile</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" aria-label="Vehicle status summary">
+        <div class="stat-card">
+          <span id="totalVehicles">0</span>
+          <small>Total Vehicles</small>
+        </div>
+        <div class="stat-card">
+          <span id="activeVehicles">0</span>
+          <small>Active Vehicles</small>
+        </div>
+        <div class="stat-card warning-stat">
+          <span id="dueVehicles">0</span>
+          <small>Need Sold / Available</small>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="duePanel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Required Action</p>
+            <h3>Update vehicle status first</h3>
+          </div>
+        </div>
+        <div id="dueList" class="vehicle-list"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Recent Posts</p>
+            <h3>Saved in this browser</h3>
+          </div>
+          <button class="ghost-btn" id="clearSoldBtn" type="button">Clear Sold</button>
+        </div>
+        <div id="recentVehicles" class="vehicle-list empty-state">No vehicle posted yet.</div>
+      </div>
+    </section>
+
+    <section class="section" id="profileSection">
+      <div class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Signup Profile</p>
+            <h2>Seller details</h2>
+          </div>
+          <span class="mini-badge">Browser testing</span>
+        </div>
+
+        <form id="profileForm" class="form-grid" autocomplete="on">
+          <label>
+            Full Name <strong>*</strong>
+            <input id="profileName" name="fullName" type="text" placeholder="Example: Dr Khan" required />
+          </label>
+
+          <label>
+            Main Phone Number <strong>*</strong>
+            <input id="profilePhone" name="phone" type="tel" inputmode="tel" placeholder="03001234567" required />
+          </label>
+
+          <label>
+            WhatsApp / Second Number
+            <input id="profileWhatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="Optional" />
+          </label>
+
+          <label>
+            City
+            <input id="profileCity" name="city" type="text" placeholder="Rawalpindi" />
+          </label>
+
+          <label class="full-width">
+            Email
+            <input id="profileEmail" name="email" type="email" placeholder="Optional" />
+          </label>
+
+          <div class="form-actions full-width">
+            <button class="primary-btn" type="submit">Save Profile</button>
+            <button class="secondary-btn" id="clearProfileBtn" type="button">Clear Profile</button>
+          </div>
+        </form>
+
+        <p class="helper-text" id="profileSaveStatus"></p>
+      </div>
+    </section>
+
+    <section class="section" id="postSection">
+      <div class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Post Vehicle</p>
+            <h2>Bolo app will fill the form</h2>
+          </div>
+          <span class="mini-badge">10 min expiry</span>
+        </div>
+
+        <div class="voice-box">
+          <div>
+            <h3>Urdu/Roman Urdu voice guide</h3>
+            <p id="voiceGuideText">Record dabain aur gaari ki tafseel bolain: company, model, year, price, city, color, registration, mileage aur extra info.</p>
+          </div>
+          <button class="secondary-btn" id="playGuideBtn" type="button">Play Guide</button>
+        </div>
+
+        <div class="recorder-card" id="recorderCard">
+          <div class="record-state">
+            <span class="record-dot" id="recordDot"></span>
+            <div>
+              <strong id="recordingStatus">Ready to record</strong>
+              <small id="recordTimer">00:00</small>
+            </div>
+          </div>
+          <div class="recorder-actions">
+            <button class="primary-btn" id="recordBtn" type="button">Start Recording</button>
+            <button class="secondary-btn" id="resetPostBtn" type="button">Reset Form</button>
+          </div>
+          <p class="helper-text" id="recordingHelp">This uses MediaRecorder audio upload. It does not use browser SpeechRecognition.</p>
+        </div>
+
+        <div class="transcript-box hidden" id="transcriptBox">
+          <p class="eyebrow">Transcript</p>
+          <p id="transcriptText"></p>
+        </div>
+
+        <form id="vehicleForm" class="form-grid vehicle-form">
+          <label>
+            Make / Company <strong>*</strong>
+            <input id="vehicleMake" name="make" type="text" placeholder="Toyota" required />
+          </label>
+
+          <label>
+            Model <strong>*</strong>
+            <input id="vehicleModel" name="model" type="text" placeholder="Yaris" required />
+          </label>
+
+          <label>
+            Model Year <strong>*</strong>
+            <input id="vehicleYear" name="year" type="number" inputmode="numeric" min="1980" max="2035" placeholder="2022" required />
+          </label>
+
+          <label>
+            Price PKR <strong>*</strong>
+            <input id="vehiclePrice" name="price" type="number" inputmode="numeric" min="1" placeholder="4500000" required />
+          </label>
+
+          <label>
+            City <strong>*</strong>
+            <input id="vehicleCity" name="city" type="text" placeholder="Lahore" required />
+          </label>
+
+          <label>
+            Color
+            <input id="vehicleColor" name="color" type="text" placeholder="White" />
+          </label>
+
+          <label>
+            Registered In
+            <input id="vehicleRegisteredIn" name="registeredIn" type="text" placeholder="Islamabad" />
+          </label>
+
+          <label>
+            Mileage KM
+            <input id="vehicleMileage" name="mileage" type="number" inputmode="numeric" min="0" placeholder="45000" />
+          </label>
+
+          <label class="full-width">
+            Additional Tafseel
+            <textarea id="vehicleExtraInfo" name="extraInfo" rows="5" placeholder="Condition, variant, features, accident status, documents, etc."></textarea>
+          </label>
+
+          <div class="form-actions full-width">
+            <button class="primary-btn" id="submitVehicleBtn" type="submit">Post Vehicle</button>
+          </div>
+        </form>
+
+        <p class="helper-text strong-helper" id="postStatus"></p>
+      </div>
+    </section>
+
+    <section class="section" id="searchSection">
+      <div class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Typed Search First</p>
+            <h2>Find vehicle</h2>
+          </div>
+          <span class="mini-badge">Voice search later</span>
+        </div>
+
+        <div class="search-row">
+          <input id="searchInput" type="search" placeholder="Search by make, model, city, year, price..." />
+          <button class="primary-btn" id="searchBtn" type="button">Search</button>
+        </div>
+        <div id="searchResults" class="vehicle-list empty-state">Search results will appear here.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>DrivePK Bolo V2 · Browser storage testing · Server transcription for posting</p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
 
