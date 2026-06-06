@@ -1,1 +1,613 @@
+:root {
+  --drivepk-red: #ef1d1d;
+  --drivepk-red-dark: #bd1111;
+  --black: #000000;
+  --ink: #141414;
+  --muted: #666666;
+  --line: #e7e7e7;
+  --soft: #f6f6f6;
+  --white: #ffffff;
+  --warning: #fff4e0;
+  --warning-border: #ffbe55;
+  --success: #eaf8ef;
+  --success-border: #6bc581;
+  --radius-xl: 26px;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(239, 29, 29, 0.08), transparent 34rem),
+    linear-gradient(180deg, #ffffff 0%, #f7f7f7 100%);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.noscript {
+  padding: 16px;
+  color: var(--white);
+  background: var(--drivepk-red);
+  text-align: center;
+  font-weight: 800;
+}
+
+.app-header {
+  width: min(1120px, calc(100% - 32px));
+  margin: 24px auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--black), var(--drivepk-red));
+  font-size: 30px;
+  font-weight: 950;
+  box-shadow: var(--shadow-soft);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--drivepk-red);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: clamp(25px, 3.5vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.status-pill,
+.mini-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 8px 13px;
+  color: var(--white);
+  background: var(--black);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.mini-badge {
+  background: var(--soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.app-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto 28px;
+}
+
+.main-nav {
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-soft);
+}
+
+.nav-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 10px;
+  color: var(--ink);
+  background: transparent;
+  font-weight: 900;
+}
+
+.nav-btn.active {
+  color: var(--white);
+  background: var(--drivepk-red);
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+.notice,
+.panel,
+.hero-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.notice {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-color: var(--warning-border);
+  background: var(--warning);
+  font-weight: 900;
+}
+
+.notice.hidden,
+.hidden {
+  display: none !important;
+}
+
+.hero-card {
+  padding: clamp(22px, 4vw, 40px);
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-card::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  bottom: -100px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(239, 29, 29, 0.1);
+}
+
+.hero-card p {
+  max-width: 700px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.hero-actions,
+.form-actions,
+.recorder-actions,
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.danger-btn,
+.success-btn {
+  min-height: 46px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0 20px;
+  font-weight: 950;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+.ghost-btn:hover,
+.danger-btn:hover,
+.success-btn:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  color: var(--white);
+  background: var(--drivepk-red);
+  box-shadow: 0 14px 28px rgba(239, 29, 29, 0.22);
+}
+
+.primary-btn:hover {
+  background: var(--drivepk-red-dark);
+}
+
+.secondary-btn {
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--line);
+}
+
+.ghost-btn {
+  color: var(--drivepk-red);
+  background: transparent;
+  border: 1px solid rgba(239, 29, 29, 0.25);
+}
+
+.danger-btn {
+  color: var(--white);
+  background: #1f1f1f;
+}
+
+.success-btn {
+  color: var(--white);
+  background: var(--drivepk-red);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.stat-card {
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-card span {
+  display: block;
+  font-size: clamp(30px, 6vw, 48px);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.stat-card small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.warning-stat {
+  border-color: var(--warning-border);
+  background: var(--warning);
+}
+
+.panel {
+  margin-top: 16px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+label strong {
+  color: var(--drivepk-red);
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 15px 14px;
+  color: var(--ink);
+  background: #ffffff;
+  outline: none;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(239, 29, 29, 0.6);
+  box-shadow: 0 0 0 4px rgba(239, 29, 29, 0.1);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.helper-text {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.strong-helper {
+  font-weight: 900;
+}
+
+.voice-box,
+.recorder-card,
+.transcript-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--soft);
+}
+
+.voice-box p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.recorder-card.recording {
+  border-color: rgba(239, 29, 29, 0.35);
+  background: rgba(239, 29, 29, 0.05);
+}
+
+.record-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.record-state small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.record-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a2a2a2;
+  box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.recording .record-dot {
+  background: var(--drivepk-red);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 29, 29, 0.36); }
+  100% { box-shadow: 0 0 0 14px rgba(239, 29, 29, 0); }
+}
+
+.transcript-box {
+  display: block;
+  background: #fff;
+}
+
+.transcript-box p:last-child {
+  margin-bottom: 0;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.vehicle-form {
+  margin-top: 10px;
+}
+
+.search-row {
+  align-items: stretch;
+}
+
+.search-row input {
+  flex: 1 1 260px;
+}
+
+.vehicle-list {
+  display: grid;
+  gap: 12px;
+}
+
+.empty-state {
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+  background: #fff;
+  font-weight: 850;
+}
+
+.vehicle-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.vehicle-card.due {
+  border-color: var(--warning-border);
+  background: var(--warning);
+}
+
+.vehicle-card.sold {
+  opacity: 0.72;
+}
+
+.vehicle-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.vehicle-title-row h3 {
+  margin: 0;
+}
+
+.vehicle-price {
+  color: var(--drivepk-red);
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.vehicle-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.vehicle-meta span {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.vehicle-extra,
+.vehicle-contact,
+.vehicle-date {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.app-footer {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto 28px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .main-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-radius: var(--radius-lg);
+  }
+
+  .stats-grid,
+  .form-grid,
+  .vehicle-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-box,
+  .recorder-card,
+  .panel-heading,
+  .vehicle-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .ghost-btn,
+  .danger-btn,
+  .success-btn {
+    width: 100%;
+  }
+
+  .recorder-actions,
+  .form-actions,
+  .hero-actions,
+  .card-actions {
+    width: 100%;
+  }
+}
 
