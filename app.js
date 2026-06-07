@@ -50,12 +50,12 @@
   let mediaRecorder = null;
   let mediaStream = null;
   let audioChunks = [];
-  let activeRecordMode = null;
   let selectedImages = [];
 
   function showScreen(id) {
     els.screens.forEach((s) => s.classList.toggle('active', s.id === id));
     els.tabs.forEach((t) => t.classList.toggle('active', t.dataset.target === id));
+
     if (id === 'listingScreen' && !els.searchResultsList.dataset.loaded) {
       searchCars({});
     }
@@ -71,17 +71,17 @@
     return `PKR ${n.toLocaleString('en-PK')}`;
   }
 
-  function getTitle(car) {
-    return car.title ||
-      [valueText(car.brand), valueText(car.carModel || car.model), car.year].filter(Boolean).join(' ') ||
-      'Vehicle';
-  }
-
   function valueText(v) {
     if (!v) return '';
     if (typeof v === 'string') return v;
     if (typeof v === 'object') return v.name || v.title || v.businessName || v._id || '';
     return String(v);
+  }
+
+  function getTitle(car) {
+    return car.title ||
+      [valueText(car.brand), valueText(car.carModel || car.model), car.year].filter(Boolean).join(' ') ||
+      'Vehicle';
   }
 
   function carImage(car) {
@@ -100,20 +100,38 @@
     return '';
   }
 
+  function escapeHtml(v) {
+    return String(v || '').replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[m]));
+  }
+
+  function escapeAttr(v) {
+    return escapeHtml(v).replace(/`/g, '&#096;');
+  }
+
   function cardHtml(car, compact = false) {
     const title = getTitle(car);
     const price = money(car.price);
     const city = cityOf(car);
-    const mileage = Number(car.mileage || 0) ? `${Number(car.mileage).toLocaleString('en-PK')} KM drive` : 'Mileage not listed';
+    const mileage = Number(car.mileage || 0)
+      ? `${Number(car.mileage).toLocaleString('en-PK')} KM drive`
+      : 'Mileage not listed';
     const img = carImage(car);
     const color = car.color ? `Color: ${car.color}` : '';
     const reg = car.registrationState ? `Registered: ${car.registrationState}` : '';
-    const badge = car.adType === 'featured' || car.boosterActive ? '<span class="badge">FEATURED PRO</span>' : '';
+    const badge = car.adType === 'featured' || car.adType === 'featured-pro' || car.boosterActive
+      ? '<span class="badge">FEATURED PRO</span>'
+      : '';
+    const url = carUrl(car);
 
     if (compact) {
-      const url = carUrl(car);
-    return `
-        <article class="feature-card" ${url ? `data-url="${escapeAttr(url)}"` : ""}>
+      return `
+        <article class="feature-card" ${url ? `data-url="${escapeAttr(url)}"` : ''}>
           <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
           <div class="feature-body">
             ${badge}
@@ -126,7 +144,7 @@
     }
 
     return `
-      <article class="list-card" ${url ? `data-url="${escapeAttr(url)}"` : ""}>
+      <article class="list-card" ${url ? `data-url="${escapeAttr(url)}"` : ''}>
         <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
         <div class="list-body">
           ${badge}
@@ -144,16 +162,6 @@
         </div>
       </article>
     `;
-  }
-
-  function escapeHtml(v) {
-    return String(v || '').replace(/[&<>"']/g, (m) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[m]));
-  }
-
-  function escapeAttr(v) {
-    return escapeHtml(v).replace(/`/g, '&#096;');
   }
 
   function buildParams(filters = {}) {
@@ -174,7 +182,7 @@
 
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: { Accept: 'application/json' }
     });
 
     if (!response.ok) {
@@ -187,6 +195,7 @@
 
   function getLocalDemoPosts() {
     const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
+
     try {
       return JSON.parse(localStorage.getItem(key) || '[]').map((car) => ({
         ...car,
@@ -206,15 +215,19 @@
     try {
       const cars = await fetchCars({ limit: 12 });
       const combined = [...localPosts, ...cars];
-      els.featuredStrip.innerHTML = combined.slice(0, 8).map((car) => cardHtml(car, true)).join('') || '<div class="empty-state">No featured cars found.</div>';
-      els.latestList.innerHTML = combined.slice(0, 12).map((car) => cardHtml(car)).join('') || '<div class="empty-state">No latest listings found.</div>';
+
+      els.featuredStrip.innerHTML = combined.slice(0, 8).map((car) => cardHtml(car, true)).join('') ||
+        '<div class="empty-state">No featured cars found.</div>';
+
+      els.latestList.innerHTML = combined.slice(0, 12).map((car) => cardHtml(car)).join('') ||
+        '<div class="empty-state">No latest listings found.</div>';
     } catch (error) {
       if (localPosts.length) {
         els.featuredStrip.innerHTML = localPosts.slice(0, 8).map((car) => cardHtml(car, true)).join('');
         els.latestList.innerHTML = localPosts.slice(0, 12).map((car) => cardHtml(car)).join('');
       } else {
         els.featuredStrip.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
-        els.latestList.innerHTML = `<div class="empty-state">Could not load listings.</div>`;
+        els.latestList.innerHTML = '<div class="empty-state">Could not load listings.</div>';
       }
     }
   }
@@ -242,32 +255,38 @@
 
     try {
       const cars = await fetchCars(finalFilters);
+
       if (!cars.length) {
         els.searchResultsList.innerHTML = '<div class="empty-state">No matching vehicle found.</div>';
         return;
       }
+
       els.searchResultsList.innerHTML = cars.map((car) => cardHtml(car)).join('');
     } catch (error) {
       els.searchResultsList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
     }
   }
 
+  function titleCase(v) {
+    return String(v || '').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   function simpleTextToFilters(text) {
     const t = String(text || '').toLowerCase();
     const filters = {};
 
-    const brands = ['toyota','honda','suzuki','kia','hyundai','mg','haval','chery','omoda','byd','ford','nissan','daihatsu','changan','proton'];
-    const cities = ['lahore','rawalpindi','islamabad','karachi','peshawar','multan','faisalabad','quetta','sialkot','attock','birmingham','london'];
+    const brands = ['toyota', 'honda', 'suzuki', 'kia', 'hyundai', 'mg', 'haval', 'chery', 'omoda', 'byd', 'ford', 'nissan', 'daihatsu', 'changan', 'proton'];
+    const cities = ['lahore', 'rawalpindi', 'islamabad', 'karachi', 'peshawar', 'multan', 'faisalabad', 'quetta', 'sialkot', 'attock'];
+    const models = ['corolla', 'yaris', 'hiace', 'prado', 'civic', 'city', 'alto', 'cultus', 'swift', 'cortina', 'fortuner', 'hilux', 'sportage', 'tucson'];
+
     const brand = brands.find((b) => t.includes(b));
     const city = cities.find((c) => t.includes(c));
     const year = t.match(/\b(19[5-9]\d|20[0-3]\d)\b/);
+    const model = models.find((m) => t.includes(m) && !(m === 'city' && city));
 
     if (brand) filters.brand = titleCase(brand);
     if (city) filters.city = titleCase(city);
     if (year) filters.year = year[1];
-
-    const knownModels = ['corolla','yaris','hiace','prado','civic','city','alto','cultus','swift','cortina','fortuner','hilux','sportage','tucson'];
-    const model = knownModels.find((m) => t.includes(m) && !(m === 'city' && city));
     if (model) filters.model = titleCase(model);
 
     const lakhRange = t.match(/(\d+(?:\.\d+)?)\s*(?:lakh|lac).*?(?:to|se|say|-).*?(\d+(?:\.\d+)?)\s*(?:lakh|lac)/);
@@ -277,10 +296,6 @@
     }
 
     return filters;
-  }
-
-  function titleCase(v) {
-    return String(v || '').replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   async function startRecording(mode) {
@@ -296,7 +311,6 @@
       return;
     }
 
-    activeRecordMode = mode;
     audioChunks = [];
 
     try {
@@ -305,15 +319,19 @@
       });
 
       mediaRecorder = new MediaRecorder(mediaStream);
+
       mediaRecorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) audioChunks.push(e.data);
       };
 
       mediaRecorder.onstop = async () => {
         mediaStream.getTracks().forEach((track) => track.stop());
+
         if (mode === 'post') els.postVoiceBtn.textContent = '🎙 Start Recording';
         if (mode === 'search') els.voiceSearchBtn.textContent = '🎙';
+
         setModeStatus(mode, 'Processing voice...');
+
         const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
 
         try {
@@ -325,18 +343,20 @@
         } finally {
           mediaRecorder = null;
           audioChunks = [];
-          activeRecordMode = null;
         }
       };
 
       mediaRecorder.start();
+
       if (mode === 'post') els.postVoiceBtn.textContent = '⏹ Stop Recording';
       if (mode === 'search') els.voiceSearchBtn.textContent = '⏹';
+
       setModeStatus(mode, 'Recording... tap again to stop. Auto stop after 60 seconds.');
+
       setTimeout(() => {
         if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-      }, Number(CONFIG.MAX_RECORDING_SECONDS || 75) * 1000);
-    } catch (error) {
+      }, Number(CONFIG.MAX_RECORDING_SECONDS || 60) * 1000);
+    } catch (_error) {
       setModeStatus(mode, 'Microphone permission failed.');
     }
   }
@@ -389,9 +409,9 @@
     els.vehicleColor.value = vehicle.color || '';
     els.vehicleRegisteredIn.value = vehicle.registeredIn || vehicle.registrationState || '';
     els.vehicleMileage.value = vehicle.mileage || '';
+
     const extra = vehicle.extraInfo ? `${vehicle.extraInfo}\n\nTranscript: ${transcript}` : transcript;
     els.vehicleExtraInfo.value = extra || '';
-
     els.postStatus.textContent = `Transcript: ${transcript}`;
   }
 
@@ -408,9 +428,9 @@
     if (mode === 'post') els.postStatus.textContent = text;
   }
 
-  
   function renderSelectedImages() {
     if (!els.imagePreviewGrid) return;
+
     if (!selectedImages.length) {
       els.imagePreviewGrid.innerHTML = '';
       els.imageStatus.textContent = 'No images selected.';
@@ -423,6 +443,7 @@
         <button type="button" data-index="${index}" class="remove-image-btn">×</button>
       </div>
     `).join('');
+
     els.imageStatus.textContent = `${selectedImages.length}/20 images selected.`;
   }
 
@@ -437,13 +458,16 @@
     }
 
     let loaded = 0;
+
     limited.forEach((file) => {
       const reader = new FileReader();
+
       reader.onload = () => {
         selectedImages.push({ name: file.name, dataUrl: reader.result });
         loaded += 1;
         if (loaded === limited.length) renderSelectedImages();
       };
+
       reader.readAsDataURL(file);
     });
   }
@@ -453,15 +477,17 @@
     renderSelectedImages();
   }
 
-  
   function updateLocalStatus(id, status) {
     const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
     const posts = JSON.parse(localStorage.getItem(key) || '[]');
+
     const updated = posts.map((car) => {
       if (car.id !== id) return car;
+
       if (status === 'sold') {
         return { ...car, status: 'sold', active: false, soldAt: new Date().toISOString() };
       }
+
       return {
         ...car,
         status: 'available',
@@ -469,6 +495,7 @@
         nextCheckAt: Date.now() + Number(CONFIG.EXPIRY_MINUTES || 10) * 60 * 1000
       };
     });
+
     localStorage.setItem(key, JSON.stringify(updated));
     loadHome();
   }
@@ -477,6 +504,7 @@
     const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
     const old = JSON.parse(localStorage.getItem(key) || '[]');
     const now = Date.now();
+
     old.push({
       id: `local_${now}`,
       title: `${els.vehicleMake.value} ${els.vehicleModel.value} ${els.vehicleYear.value}`.trim(),
@@ -496,6 +524,7 @@
       nextCheckAt: now + Number(CONFIG.EXPIRY_MINUTES || 10) * 60 * 1000,
       createdAt: new Date().toISOString()
     });
+
     localStorage.setItem(key, JSON.stringify(old));
     resetPost();
     els.postStatus.textContent = 'Demo post saved in this browser. Form reset.';
@@ -504,15 +533,30 @@
   }
 
   function resetPost() {
-    ['vehicleMake','vehicleModel','vehicleYear','vehiclePrice','vehicleCity','vehicleColor','vehicleRegisteredIn','vehicleMileage','vehicleExtraInfo']
-      .forEach((k) => els[k].value = '');
+    [
+      'vehicleMake',
+      'vehicleModel',
+      'vehicleYear',
+      'vehiclePrice',
+      'vehicleCity',
+      'vehicleColor',
+      'vehicleRegisteredIn',
+      'vehicleMileage',
+      'vehicleExtraInfo'
+    ].forEach((k) => {
+      if (els[k]) els[k].value = '';
+    });
+
     selectedImages = [];
     renderSelectedImages();
     els.postStatus.textContent = 'Ready to record';
   }
 
   function bind() {
-    els.tabs.forEach((tab) => tab.addEventListener('click', () => showScreen(tab.dataset.target)));
+    els.tabs.forEach((tab) => {
+      tab.addEventListener('click', () => showScreen(tab.dataset.target));
+    });
+
     els.openSearchBtn.addEventListener('click', () => showScreen('listingScreen'));
     els.viewAllBtn.addEventListener('click', () => showScreen('listingScreen'));
     els.backHomeBtn.addEventListener('click', () => showScreen('homeScreen'));
@@ -532,6 +576,7 @@
         if (btn.dataset.body) filters.bodyType = btn.dataset.body;
         if (btn.dataset.category) filters.category = btn.dataset.category;
         if (btn.dataset.fuel) filters.fuelType = btn.dataset.fuel;
+
         showScreen('listingScreen');
         searchCars(filters);
       });
@@ -543,7 +588,6 @@
     els.resetPostBtn.addEventListener('click', resetPost);
     els.saveLocalPostBtn.addEventListener('click', saveLocalPost);
 
-    
     document.addEventListener('click', (event) => {
       const urlCard = event.target.closest('[data-url]');
       if (urlCard) {
@@ -557,6 +601,7 @@
 
       const soldBtn = event.target.closest('.mark-sold-btn');
       const availableBtn = event.target.closest('.mark-available-btn');
+
       if (soldBtn || availableBtn) {
         updateLocalStatus((soldBtn || availableBtn).dataset.id, soldBtn ? 'sold' : 'available');
       }
