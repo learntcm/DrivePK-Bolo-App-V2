@@ -1,30 +1,44 @@
-# DrivePK Bolo App V2 - Urgent Server + Parser Fix
+# DrivePK Bolo V2 - Native Search UI
 
-Upload these frontend files to the GitHub Pages repo root:
+This version keeps the database untouched and adds:
 
-- index.html
-- styles.css
-- config.js
-- app.js
-- README.md
+- Native DrivePK-style dark UI
+- Real car search using `GET https://api.drivepk.com/cars`
+- Voice search button with mic icon
+- Typed search and quick filters
+- Existing demo POST VEHICLE voice flow
+- GPT-powered server response support for `vehicle_search` and `vehicle_post`
 
-Also upload/replace this server file on Bluehost:
+## Upload to GitHub repo root
 
-- transcribe.php -> /home4/helpninn/public_html/meilibeautyco/transcribe.php
+Replace:
 
-Important: the old transcribe.php was returning Urdu script. This fixed version uses OpenAI audio translation and returns English/Roman-letter transcript, so columns can be parsed correctly.
+- `index.html`
+- `styles.css`
+- `config.js`
+- `app.js`
 
-Test sentence:
+## Server requirement
 
-Make Toyota, Model Hiace, Year 1986, Price 32 lakh, City Rawalpindi, Color White, Registered in Islamabad, Mileage 300000.
+Your existing `transcribe.php` should support:
 
-Expected fields:
+- `task=vehicle_post`
+- `task=vehicle_search`
 
-- Make: Toyota
-- Model: Hiace
-- Year: 1986
-- Price: 3200000
-- City: Rawalpindi
-- Color: White
-- Registered In: Islamabad
-- Mileage: 300000
+For search it should return either:
+
+```json
+{
+  "transcript": "Toyota Corolla Lahore 2020 10 lakh to 30 lakh",
+  "filters": {
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2020,
+    "minPrice": 1000000,
+    "maxPrice": 3000000,
+    "city": "Lahore"
+  }
+}
+```
+
+The frontend also includes a basic fallback parser, but GPT extraction is recommended.
