@@ -732,6 +732,8 @@
     const formData = new FormData();
     formData.append('audio', audioBlob, `drivepk-vehicle-recording.${extension}`);
     formData.append('language', 'en');
+    formData.append('mode', 'translate_to_english');
+    formData.append('roman_output', '1');
     formData.append('task', 'vehicle_post');
 
     const response = await fetch(CONFIG.TRANSCRIBE_URL, {
