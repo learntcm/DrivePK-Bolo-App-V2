@@ -164,14 +164,37 @@
     return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
   }
 
+  function getLocalDemoPosts() {
+    const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
+    try {
+      return JSON.parse(localStorage.getItem(key) || '[]').map((car) => ({
+        ...car,
+        title: car.title || [car.brand, car.carModel, car.year].filter(Boolean).join(' '),
+        images: car.images || [],
+        location: car.location || { city: car.city || '' },
+        adType: car.adType || 'demo'
+      })).reverse();
+    } catch (_e) {
+      return [];
+    }
+  }
+
   async function loadHome() {
+    const localPosts = getLocalDemoPosts();
+
     try {
       const cars = await fetchCars({ limit: 12 });
-      els.featuredStrip.innerHTML = cars.slice(0, 8).map((car) => cardHtml(car, true)).join('') || '<div class="empty-state">No featured cars found.</div>';
-      els.latestList.innerHTML = cars.slice(0, 8).map((car) => cardHtml(car)).join('') || '<div class="empty-state">No latest listings found.</div>';
+      const combined = [...localPosts, ...cars];
+      els.featuredStrip.innerHTML = combined.slice(0, 8).map((car) => cardHtml(car, true)).join('') || '<div class="empty-state">No featured cars found.</div>';
+      els.latestList.innerHTML = combined.slice(0, 12).map((car) => cardHtml(car)).join('') || '<div class="empty-state">No latest listings found.</div>';
     } catch (error) {
-      els.featuredStrip.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
-      els.latestList.innerHTML = `<div class="empty-state">Could not load listings.</div>`;
+      if (localPosts.length) {
+        els.featuredStrip.innerHTML = localPosts.slice(0, 8).map((car) => cardHtml(car, true)).join('');
+        els.latestList.innerHTML = localPosts.slice(0, 12).map((car) => cardHtml(car)).join('');
+      } else {
+        els.featuredStrip.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+        els.latestList.innerHTML = `<div class="empty-state">Could not load listings.</div>`;
+      }
     }
   }
 
@@ -375,6 +398,8 @@
     });
     localStorage.setItem(key, JSON.stringify(old));
     els.postStatus.textContent = 'Demo post saved in this browser.';
+    loadHome();
+    showScreen('homeScreen');
   }
 
   function resetPost() {
