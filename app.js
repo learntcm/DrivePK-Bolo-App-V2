@@ -2,46 +2,35 @@
   'use strict';
 
   const CONFIG = window.DRIVEPK_BOLO_CONFIG || {};
-  const EXPIRY_MS = Number(CONFIG.EXPIRY_MINUTES || 10) * 60 * 1000;
-  const MAX_RECORDING_SECONDS = Number(CONFIG.MAX_RECORDING_SECONDS || 75);
-
-  const $ = (selector) => document.querySelector(selector);
-  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+  const $ = (q) => document.querySelector(q);
+  const $$ = (q) => Array.from(document.querySelectorAll(q));
 
   const els = {
-    navButtons: $$('.nav-btn'),
-    lockNotice: $('#lockNotice'),
-    appStatus: $('#appStatus'),
-    goPostBtn: $('#goPostBtn'),
-    goProfileBtn: $('#goProfileBtn'),
-    totalVehicles: $('#totalVehicles'),
-    activeVehicles: $('#activeVehicles'),
-    dueVehicles: $('#dueVehicles'),
-    duePanel: $('#duePanel'),
-    dueList: $('#dueList'),
-    recentVehicles: $('#recentVehicles'),
-    clearSoldBtn: $('#clearSoldBtn'),
+    screens: $$('.screen'),
+    tabs: $$('.bottom-nav button'),
+    homeSearchInput: $('#homeSearchInput'),
+    openSearchBtn: $('#openSearchBtn'),
+    viewAllBtn: $('#viewAllBtn'),
+    featuredStrip: $('#featuredStrip'),
+    latestList: $('#latestList'),
+    backHomeBtn: $('#backHomeBtn'),
+    listingSearchInput: $('#listingSearchInput'),
+    voiceSearchBtn: $('#voiceSearchBtn'),
+    runSearchBtn: $('#runSearchBtn'),
+    searchResultsList: $('#searchResultsList'),
+    voiceStatus: $('#voiceStatus'),
+    brandInput: $('#brandInput'),
+    modelInput: $('#modelInput'),
+    cityInput: $('#cityInput'),
+    minPriceInput: $('#minPriceInput'),
+    maxPriceInput: $('#maxPriceInput'),
+    yearInput: $('#yearInput'),
 
-    profileForm: $('#profileForm'),
-    profileName: $('#profileName'),
-    profilePhone: $('#profilePhone'),
-    profileWhatsapp: $('#profileWhatsapp'),
-    profileCity: $('#profileCity'),
-    profileEmail: $('#profileEmail'),
-    profileSaveStatus: $('#profileSaveStatus'),
-    clearProfileBtn: $('#clearProfileBtn'),
-
-    playGuideBtn: $('#playGuideBtn'),
-    recorderCard: $('#recorderCard'),
-    recordBtn: $('#recordBtn'),
+    backFromPostBtn: $('#backFromPostBtn'),
+    postVoiceBtn: $('#postVoiceBtn'),
     resetPostBtn: $('#resetPostBtn'),
-    recordingStatus: $('#recordingStatus'),
-    recordingHelp: $('#recordingHelp'),
-    recordTimer: $('#recordTimer'),
-    transcriptBox: $('#transcriptBox'),
-    transcriptText: $('#transcriptText'),
-
-    vehicleForm: $('#vehicleForm'),
+    postStatus: $('#postStatus'),
+    saveLocalPostBtn: $('#saveLocalPostBtn'),
     vehicleMake: $('#vehicleMake'),
     vehicleModel: $('#vehicleModel'),
     vehicleYear: $('#vehicleYear'),
@@ -50,875 +39,387 @@
     vehicleColor: $('#vehicleColor'),
     vehicleRegisteredIn: $('#vehicleRegisteredIn'),
     vehicleMileage: $('#vehicleMileage'),
-    vehicleExtraInfo: $('#vehicleExtraInfo'),
-    submitVehicleBtn: $('#submitVehicleBtn'),
-    postStatus: $('#postStatus'),
-
-    searchInput: $('#searchInput'),
-    searchBtn: $('#searchBtn'),
-    searchResults: $('#searchResults')
+    vehicleExtraInfo: $('#vehicleExtraInfo')
   };
 
   let mediaRecorder = null;
   let mediaStream = null;
   let audioChunks = [];
-  let recordingStartedAt = 0;
-  let recordingTimerId = null;
-  let maxRecordingTimerId = null;
-  let activeGuideAudio = null;
+  let activeRecordMode = null;
 
-  const makeModels = {
-    Toyota: ['Corolla', 'Yaris', 'Aqua', 'Prius', 'Vitz', 'Passo', 'Fortuner', 'Hilux', 'Revo', 'Prado', 'Land Cruiser', 'Grande', 'Altis', 'Hiace', 'Coaster', 'TownAce', 'Raize', 'Rush', 'Camry'],
-    Honda: ['City', 'Civic', 'BR-V', 'Vezel', 'Fit', 'Grace', 'Accord', 'HR-V'],
-    Suzuki: ['Alto', 'Cultus', 'Wagon R', 'Swift', 'Mehran', 'Bolan', 'Ravi', 'Ciaz', 'Baleno', 'Every'],
-    Daihatsu: ['Mira', 'Move', 'Hijet', 'Cuore', 'Cast', 'Tanto'],
-    Nissan: ['Dayz', 'Roox', 'Note', 'Juke', 'Sunny'],
-    Kia: ['Sportage', 'Picanto', 'Stonic', 'Sorento', 'Carnival'],
-    Hyundai: ['Tucson', 'Elantra', 'Sonata', 'Santro', 'Porter'],
-    Changan: ['Alsvin', 'Oshan', 'Karvaan', 'M9', 'M8'],
-    MG: ['HS', 'ZS', 'Cyberster'],
-    Haval: ['H6', 'Jolion'],
-    BYD: ['Atto 3', 'Seal', 'Dolphin', 'Sealion'],
-    Chery: ['Tiggo 4', 'Tiggo 7', 'Tiggo 8'],
-    Omoda: ['E5', 'C5', 'C7'],
-    Jaecoo: ['J7', 'J8'],
-    Proton: ['Saga', 'X70'],
-    BAIC: ['BJ40', 'D20'],
-    DFSK: ['Glory 580', 'Glory 500', 'C37'],
-    Ford: ['Cortina', 'Escort', 'Mustang', 'Ranger', 'F-150', 'Focus', 'Fiesta', 'Transit']
-  };
-
-  const cityList = [
-    'Rawalpindi', 'Islamabad', 'Lahore', 'Karachi', 'Peshawar', 'Multan', 'Faisalabad', 'Sialkot',
-    'Gujranwala', 'Gujrat', 'Sargodha', 'Bahawalpur', 'Hyderabad', 'Sukkur', 'Quetta', 'Mardan',
-    'Abbottabad', 'Sahiwal', 'Okara', 'Jhelum', 'Attock', 'Wah', 'Taxila', 'Rahim Yar Khan', 'Dera Ghazi Khan'
-  ];
-
-  const colors = [
-    'White', 'Black', 'Silver', 'Grey', 'Gray', 'Red', 'Blue', 'Green', 'Golden', 'Beige', 'Brown',
-    'Maroon', 'Pearl White', 'Graphite Grey', 'Gun Metallic', 'Super White'
-  ];
-
-  const registrationCities = [
-    ...cityList,
-    'Punjab', 'Sindh', 'KPK', 'Balochistan', 'AJK', 'Gilgit', 'Unregistered', 'Applied For'
-  ];
-
-  function storageKey(name) {
-    return (CONFIG.STORAGE_KEYS && CONFIG.STORAGE_KEYS[name]) || `drivepk_bolo_v2_${name.toLowerCase()}`;
-  }
-
-  function safeJsonParse(value, fallback) {
-    try {
-      return value ? JSON.parse(value) : fallback;
-    } catch (_error) {
-      return fallback;
+  function showScreen(id) {
+    els.screens.forEach((s) => s.classList.toggle('active', s.id === id));
+    els.tabs.forEach((t) => t.classList.toggle('active', t.dataset.target === id));
+    if (id === 'listingScreen' && !els.searchResultsList.dataset.loaded) {
+      searchCars({});
     }
   }
 
-  function getProfile() {
-    return safeJsonParse(localStorage.getItem(storageKey('PROFILE')), null);
-  }
-
-  function saveProfile(profile) {
-    localStorage.setItem(storageKey('PROFILE'), JSON.stringify(profile));
-  }
-
-  function getVehicles() {
-    return safeJsonParse(localStorage.getItem(storageKey('VEHICLES')), []);
-  }
-
-  function saveVehicles(vehicles) {
-    localStorage.setItem(storageKey('VEHICLES'), JSON.stringify(vehicles));
-  }
-
-  function formatCurrency(value) {
-    const amount = Number(value || 0);
-    if (!amount) return 'PKR -';
-    return `PKR ${amount.toLocaleString('en-PK')}`;
-  }
-
-  function formatDateTime(timestamp) {
-    if (!timestamp) return '-';
-    return new Intl.DateTimeFormat('en-PK', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    }).format(new Date(timestamp));
-  }
-
-  function normalizeDigits(text) {
-    const urduDigits = '۰۱۲۳۴۵۶۷۸۹';
-    const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
-    return String(text || '').replace(/[۰-۹٠-٩]/g, (digit) => {
-      const urduIndex = urduDigits.indexOf(digit);
-      if (urduIndex >= 0) return String(urduIndex);
-      const arabicIndex = arabicDigits.indexOf(digit);
-      if (arabicIndex >= 0) return String(arabicIndex);
-      return digit;
-    });
-  }
-
-  function normalizeText(text) {
-    return normalizeDigits(text)
-      .replace(/[,،]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  function escapeHtml(value) {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function showSection(sectionId) {
-    $$('.section').forEach((section) => section.classList.toggle('active', section.id === sectionId));
-    els.navButtons.forEach((button) => button.classList.toggle('active', button.dataset.section === sectionId));
-
-    if (sectionId === 'postSection') {
-      const profile = getProfile();
-      if (profile && profile.city && !els.vehicleCity.value.trim()) {
-        els.vehicleCity.value = profile.city;
-      }
-      playPostGuideOnce();
+  function money(value) {
+    const n = Number(value || 0);
+    if (!n) return 'Price on Call';
+    if (n >= 100000) {
+      const lakh = n / 100000;
+      return `${Number.isInteger(lakh) ? lakh : lakh.toFixed(1)} Lakh PKR`;
     }
+    return `PKR ${n.toLocaleString('en-PK')}`;
+  }
 
-    if (sectionId === 'homeSection') {
-      renderAll();
+  function getTitle(car) {
+    return car.title ||
+      [valueText(car.brand), valueText(car.carModel || car.model), car.year].filter(Boolean).join(' ') ||
+      'Vehicle';
+  }
+
+  function valueText(v) {
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object') return v.name || v.title || v.businessName || v._id || '';
+    return String(v);
+  }
+
+  function carImage(car) {
+    const img = Array.isArray(car.images) && car.images.length ? car.images[0] : '';
+    return img || 'https://dummyimage.com/300x220/1b1f24/ffffff&text=DrivePK';
+  }
+
+  function cityOf(car) {
+    return car?.location?.city || car?.currentLocation?.city || car.city || '-';
+  }
+
+  function cardHtml(car, compact = false) {
+    const title = getTitle(car);
+    const price = money(car.price);
+    const city = cityOf(car);
+    const mileage = Number(car.mileage || 0) ? `${Number(car.mileage).toLocaleString('en-PK')} KM drive` : 'Mileage not listed';
+    const img = carImage(car);
+    const color = car.color ? `Color: ${car.color}` : '';
+    const reg = car.registrationState ? `Registered: ${car.registrationState}` : '';
+    const badge = car.adType === 'featured' || car.boosterActive ? '<span class="badge">FEATURED PRO</span>' : '';
+
+    if (compact) {
+      return `
+        <article class="feature-card">
+          <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
+          <div class="feature-body">
+            ${badge}
+            <h3>${escapeHtml(title)}</h3>
+            <div class="price">${escapeHtml(price)}</div>
+            <div class="meta">${escapeHtml(city)} · ${escapeHtml(mileage)}</div>
+          </div>
+        </article>
+      `;
     }
-  }
-
-  function getDueVehicles() {
-    const now = Date.now();
-    return getVehicles().filter((vehicle) => vehicle.active && vehicle.status === 'available' && Number(vehicle.nextCheckAt || 0) <= now);
-  }
-
-  function hasDueVehicleLock() {
-    return getDueVehicles().length > 0;
-  }
-
-  function setPostLocked(isLocked) {
-    const disabled = Boolean(isLocked);
-    els.recordBtn.disabled = disabled;
-    els.submitVehicleBtn.disabled = disabled;
-
-    if (disabled && mediaRecorder && mediaRecorder.state === 'recording') {
-      stopRecording();
-    }
-  }
-
-  function renderLockNotice() {
-    const due = getDueVehicles();
-    if (due.length) {
-      els.lockNotice.textContent = `${due.length} vehicle needs Sold / Available confirmation. You cannot post another vehicle until you update it.`;
-      els.lockNotice.classList.remove('hidden');
-      setPostLocked(true);
-      return;
-    }
-
-    els.lockNotice.classList.add('hidden');
-    els.lockNotice.textContent = '';
-    setPostLocked(false);
-  }
-
-  function renderStats() {
-    const vehicles = getVehicles();
-    const active = vehicles.filter((vehicle) => vehicle.active && vehicle.status === 'available');
-    const due = getDueVehicles();
-
-    els.totalVehicles.textContent = String(vehicles.length);
-    els.activeVehicles.textContent = String(active.length);
-    els.dueVehicles.textContent = String(due.length);
-    els.appStatus.textContent = due.length ? 'Action Required' : 'V2 Testing';
-  }
-
-  function vehicleTitle(vehicle) {
-    return [vehicle.make, vehicle.model, vehicle.year].filter(Boolean).join(' ') || 'Vehicle';
-  }
-
-  function vehicleCardHtml(vehicle, options = {}) {
-    const isDue = options.due || false;
-    const soldClass = vehicle.status === 'sold' ? ' sold' : '';
-    const dueClass = isDue ? ' due' : '';
-    const statusText = vehicle.status === 'sold' ? 'Sold' : (isDue ? 'Needs update' : 'Available');
-    const nextCheckText = vehicle.active ? `Next check: ${formatDateTime(vehicle.nextCheckAt)}` : 'Inactive';
 
     return `
-      <article class="vehicle-card${dueClass}${soldClass}" data-id="${escapeHtml(vehicle.id)}">
-        <div class="vehicle-title-row">
-          <h3>${escapeHtml(vehicleTitle(vehicle))}</h3>
-          <div class="vehicle-price">${escapeHtml(formatCurrency(vehicle.price))}</div>
+      <article class="list-card">
+        <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
+        <div class="list-body">
+          ${badge}
+          <h3>${escapeHtml(title)}</h3>
+          <div class="meta">${escapeHtml(city)} · ${escapeHtml(mileage)}</div>
+          <div class="meta">${escapeHtml(color)} ${escapeHtml(reg)}</div>
+          <div class="price">${escapeHtml(price)}</div>
         </div>
-        <div class="vehicle-meta">
-          <span>City: ${escapeHtml(vehicle.city || '-')}</span>
-          <span>Color: ${escapeHtml(vehicle.color || '-')}</span>
-          <span>Registered: ${escapeHtml(vehicle.registeredIn || '-')}</span>
-          <span>Mileage: ${vehicle.mileage ? `${escapeHtml(Number(vehicle.mileage).toLocaleString('en-PK'))} KM` : '-'}</span>
-          <span>Status: ${escapeHtml(statusText)}</span>
-          <span>${escapeHtml(nextCheckText)}</span>
-        </div>
-        ${vehicle.extraInfo ? `<p class="vehicle-extra">${escapeHtml(vehicle.extraInfo)}</p>` : ''}
-        <p class="vehicle-contact">Seller: ${escapeHtml(vehicle.sellerName || '-')} · Phone: ${escapeHtml(vehicle.phone || '-')} · WhatsApp: ${escapeHtml(vehicle.whatsapp || vehicle.phone || '-')}</p>
-        <p class="vehicle-date">Posted: ${escapeHtml(formatDateTime(vehicle.createdAt))}</p>
-        ${isDue ? `
-          <div class="card-actions">
-            <button class="success-btn mark-available-btn" type="button" data-id="${escapeHtml(vehicle.id)}">Still Available</button>
-            <button class="danger-btn mark-sold-btn" type="button" data-id="${escapeHtml(vehicle.id)}">Sold</button>
-          </div>
-        ` : ''}
       </article>
     `;
   }
 
-  function renderDuePanel() {
-    const due = getDueVehicles();
-    if (!due.length) {
-      els.duePanel.classList.add('hidden');
-      els.dueList.innerHTML = '';
-      return;
-    }
-
-    els.duePanel.classList.remove('hidden');
-    els.dueList.innerHTML = due.map((vehicle) => vehicleCardHtml(vehicle, { due: true })).join('');
+  function escapeHtml(v) {
+    return String(v || '').replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
   }
 
-  function renderRecentVehicles() {
-    const vehicles = getVehicles().slice().sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-    if (!vehicles.length) {
-      els.recentVehicles.className = 'vehicle-list empty-state';
-      els.recentVehicles.textContent = 'No vehicle posted yet.';
-      return;
-    }
-
-    els.recentVehicles.className = 'vehicle-list';
-    els.recentVehicles.innerHTML = vehicles.slice(0, 12).map((vehicle) => vehicleCardHtml(vehicle)).join('');
+  function escapeAttr(v) {
+    return escapeHtml(v).replace(/`/g, '&#096;');
   }
 
-  function renderAll() {
-    renderStats();
-    renderLockNotice();
-    renderDuePanel();
-    renderRecentVehicles();
-  }
+  function buildParams(filters = {}) {
+    const params = new URLSearchParams();
 
-  function updateVehicleStatus(id, status) {
-    const vehicles = getVehicles();
-    const updated = vehicles.map((vehicle) => {
-      if (vehicle.id !== id) return vehicle;
-
-      if (status === 'sold') {
-        return {
-          ...vehicle,
-          status: 'sold',
-          active: false,
-          soldAt: Date.now(),
-          updatedAt: Date.now()
-        };
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        params.set(key, String(value).trim());
       }
-
-      return {
-        ...vehicle,
-        status: 'available',
-        active: true,
-        lastConfirmedAt: Date.now(),
-        nextCheckAt: Date.now() + EXPIRY_MS,
-        updatedAt: Date.now()
-      };
     });
 
-    saveVehicles(updated);
-    renderAll();
+    return params;
   }
 
-  function loadProfileIntoForm() {
-    const profile = getProfile();
-    if (!profile) return;
+  async function fetchCars(filters = {}) {
+    const params = buildParams(filters);
+    const url = `${CONFIG.CARS_API_URL}${params.toString() ? '?' + params.toString() : ''}`;
 
-    els.profileName.value = profile.fullName || '';
-    els.profilePhone.value = profile.phone || '';
-    els.profileWhatsapp.value = profile.whatsapp || '';
-    els.profileCity.value = profile.city || '';
-    els.profileEmail.value = profile.email || '';
-  }
-
-  function getProfileFromForm() {
-    return {
-      fullName: els.profileName.value.trim(),
-      phone: els.profilePhone.value.trim(),
-      whatsapp: els.profileWhatsapp.value.trim(),
-      city: els.profileCity.value.trim(),
-      email: els.profileEmail.value.trim(),
-      savedAt: Date.now()
-    };
-  }
-
-  function resetVehicleForm() {
-    els.vehicleForm.reset();
-    const profile = getProfile();
-    if (profile && profile.city) {
-      els.vehicleCity.value = profile.city;
-    }
-    els.transcriptBox.classList.add('hidden');
-    els.transcriptText.textContent = '';
-    els.postStatus.textContent = '';
-  }
-
-  function getVehicleFromForm(profile) {
-    return {
-      id: `veh_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      make: els.vehicleMake.value.trim(),
-      model: els.vehicleModel.value.trim(),
-      year: Number(els.vehicleYear.value || 0),
-      price: Number(els.vehiclePrice.value || 0),
-      city: els.vehicleCity.value.trim() || profile.city || '',
-      color: els.vehicleColor.value.trim(),
-      registeredIn: els.vehicleRegisteredIn.value.trim(),
-      mileage: Number(els.vehicleMileage.value || 0),
-      extraInfo: els.vehicleExtraInfo.value.trim(),
-      sellerName: profile.fullName,
-      phone: profile.phone,
-      whatsapp: profile.whatsapp || profile.phone,
-      email: profile.email || '',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      nextCheckAt: Date.now() + EXPIRY_MS,
-      status: 'available',
-      active: true,
-      sourceTranscript: els.transcriptText.textContent.trim()
-    };
-  }
-
-  function fillField(input, value) {
-    if (value === undefined || value === null || value === '') return;
-    input.value = value;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-
-  function findKnownValue(text, list) {
-    const clean = ` ${text.toLowerCase()} `;
-    const sorted = list.slice().sort((a, b) => b.length - a.length);
-    return sorted.find((item) => clean.includes(` ${item.toLowerCase()} `)) || '';
-  }
-
-  function extractMakeModel(text) {
-    const lower = ` ${text.toLowerCase()} `;
-    let detectedMake = '';
-    let detectedModel = '';
-
-    Object.entries(makeModels).some(([make, models]) => {
-      if (lower.includes(` ${make.toLowerCase()} `)) {
-        detectedMake = make;
-      }
-
-      const matchedModel = models
-        .slice()
-        .sort((a, b) => b.length - a.length)
-        .find((model) => lower.includes(` ${model.toLowerCase()} `));
-
-      if (matchedModel) {
-        detectedMake = make;
-        detectedModel = matchedModel;
-        return true;
-      }
-
-      return false;
-    });
-
-    return { make: detectedMake, model: detectedModel };
-  }
-
-  function extractYear(text) {
-    const match = text.match(/\b(19[8-9]\d|20[0-3]\d)\b/);
-    return match ? Number(match[1]) : '';
-  }
-
-  function extractPrice(text) {
-    const clean = text.toLowerCase();
-    const croreMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(crore|cror|karor|کروڑ)/i);
-    if (croreMatch) return Math.round(Number(croreMatch[1]) * 10000000);
-
-    const lakhMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(lakh|lac|lak|لاکھ)/i);
-    if (lakhMatch) return Math.round(Number(lakhMatch[1]) * 100000);
-
-    const millionMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*million/i);
-    if (millionMatch) return Math.round(Number(millionMatch[1]) * 1000000);
-
-    const directPrice = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)\s*(?:is|hai|hy|=|:)?\s*(\d{5,9})/i);
-    if (directPrice) return Number(directPrice[1]);
-
-    return '';
-  }
-
-  function extractMileage(text) {
-    const clean = text.toLowerCase();
-    const afterKeyword = clean.match(/(?:mileage|milage|meter|running|chali|chalai|kilometer|kilometers|km)\s*(?:is|hai|hy|=|:)?\s*(\d{1,6})/i);
-    if (afterKeyword) return Number(afterKeyword[1]);
-
-    const beforeKeyword = clean.match(/\b(\d{4,6})\s*(?:km|kilometer|kilometers|chali hui|chalai hui)\b/i);
-    if (beforeKeyword) return Number(beforeKeyword[1]);
-
-    return '';
-  }
-
-  function extractCity(text) {
-    const cityByKeyword = text.match(/(?:city|shehar|location|jaga)\s*(?:is|hai|hy|=|:)?\s*([a-zA-Z ]{3,25})/i);
-    if (cityByKeyword) {
-      const candidate = cityList.find((city) => cityByKeyword[1].toLowerCase().includes(city.toLowerCase()));
-      if (candidate) return candidate;
-    }
-    return findKnownValue(text, cityList);
-  }
-
-  function extractRegisteredIn(text) {
-    const clean = text.toLowerCase();
-    const regMatch = clean.match(/(?:registered in|registration|register|reg|number)\s*(?:is|hai|hy|=|:)?\s*([a-zA-Z ]{3,25})/i);
-    if (regMatch) {
-      const candidate = registrationCities.find((city) => regMatch[1].toLowerCase().includes(city.toLowerCase()));
-      if (candidate) return candidate;
-    }
-    return '';
-  }
-
-  function parseVehicleDetails(rawTranscript) {
-    const text = normalizeText(rawTranscript);
-    const makeModel = extractMakeModel(text);
-    const parsed = {
-      make: makeModel.make,
-      model: makeModel.model,
-      year: extractYear(text),
-      price: extractPrice(text),
-      city: extractCity(text),
-      color: findKnownValue(text, colors),
-      registeredIn: extractRegisteredIn(text),
-      mileage: extractMileage(text),
-      extraInfo: text
-    };
-
-    return parsed;
-  }
-
-  function applyParsedDetails(parsed) {
-    fillField(els.vehicleMake, parsed.make);
-    fillField(els.vehicleModel, parsed.model);
-    fillField(els.vehicleYear, parsed.year);
-    fillField(els.vehiclePrice, parsed.price);
-    fillField(els.vehicleCity, parsed.city);
-    fillField(els.vehicleColor, parsed.color);
-    fillField(els.vehicleRegisteredIn, parsed.registeredIn);
-    fillField(els.vehicleMileage, parsed.mileage);
-
-    if (parsed.extraInfo && !els.vehicleExtraInfo.value.trim()) {
-      fillField(els.vehicleExtraInfo, parsed.extraInfo);
-    }
-
-    const detected = [
-      parsed.make || '-',
-      parsed.model || '-',
-      parsed.year || '-',
-      parsed.price ? formatCurrency(parsed.price) : 'PKR -',
-      parsed.city || '-'
-    ].join(' · ');
-
-    els.postStatus.textContent = `Detected: ${detected}`;
-  }
-
-  async function playTextWithServerVoice(text) {
-    if (!CONFIG.VOICE_URL) {
-      throw new Error('VOICE_URL is missing in config.js');
-    }
-
-    if (activeGuideAudio) {
-      activeGuideAudio.pause();
-      activeGuideAudio = null;
-    }
-
-    const formData = new FormData();
-    formData.append('text', text);
-
-    const response = await fetch(CONFIG.VOICE_URL, {
-      method: 'POST',
-      body: formData
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
     });
 
     if (!response.ok) {
-      throw new Error(`Voice server error ${response.status}`);
+      throw new Error(`DrivePK API error ${response.status}`);
     }
 
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    activeGuideAudio = new Audio(audioUrl);
-    activeGuideAudio.addEventListener('ended', () => URL.revokeObjectURL(audioUrl), { once: true });
-    await activeGuideAudio.play();
+    const data = await response.json();
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
   }
 
-  async function playPostGuideOnce() {
-    const playedKey = storageKey('GUIDE_PLAYED');
-    if (sessionStorage.getItem(playedKey) === '1') return;
-    sessionStorage.setItem(playedKey, '1');
-    await playGuideSafe();
-  }
-
-  async function playGuideSafe() {
-    const text = 'Assalam o Alaikum. Post vehicle ke liye record button dabain. Company, model, year, price, city, color, registration, mileage aur extra tafseel wazeh bolain.';
+  async function loadHome() {
     try {
-      await playTextWithServerVoice(text);
+      const cars = await fetchCars({ limit: 12 });
+      els.featuredStrip.innerHTML = cars.slice(0, 8).map((car) => cardHtml(car, true)).join('') || '<div class="empty-state">No featured cars found.</div>';
+      els.latestList.innerHTML = cars.slice(0, 8).map((car) => cardHtml(car)).join('') || '<div class="empty-state">No latest listings found.</div>';
     } catch (error) {
-      console.warn(error);
-      els.recordingHelp.textContent = 'Voice guide could not play. You can still record vehicle details.';
+      els.featuredStrip.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      els.latestList.innerHTML = `<div class="empty-state">Could not load listings.</div>`;
     }
   }
 
-  function getSupportedMimeType() {
-    const candidates = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/mp4',
-      'audio/ogg;codecs=opus'
-    ];
+  function filtersFromInputs() {
+    const filters = {
+      brand: els.brandInput.value,
+      model: els.modelInput.value,
+      city: els.cityInput.value,
+      minPrice: els.minPriceInput.value,
+      maxPrice: els.maxPriceInput.value,
+      year: els.yearInput.value
+    };
 
-    if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
-    return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || '';
+    const text = els.listingSearchInput.value.trim();
+    if (text) filters.carName = text;
+
+    return filters;
   }
 
-  function setRecordingUi(isRecording, message) {
-    els.recorderCard.classList.toggle('recording', isRecording);
-    els.recordBtn.textContent = isRecording ? 'Stop Recording' : 'Start Recording';
-    els.recordingStatus.textContent = message || (isRecording ? 'Recording...' : 'Ready to record');
-  }
+  async function searchCars(filters = null) {
+    const finalFilters = filters || filtersFromInputs();
+    els.searchResultsList.dataset.loaded = '1';
+    els.searchResultsList.innerHTML = '<div class="loading-card">Searching DrivePK cars...</div>';
 
-  function updateRecordingTimer() {
-    const elapsed = Math.max(0, Math.floor((Date.now() - recordingStartedAt) / 1000));
-    const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
-    const seconds = String(elapsed % 60).padStart(2, '0');
-    els.recordTimer.textContent = `${minutes}:${seconds}`;
-  }
-
-  function cleanupRecordingResources() {
-    clearInterval(recordingTimerId);
-    clearTimeout(maxRecordingTimerId);
-    recordingTimerId = null;
-    maxRecordingTimerId = null;
-
-    if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => track.stop());
-      mediaStream = null;
+    try {
+      const cars = await fetchCars(finalFilters);
+      if (!cars.length) {
+        els.searchResultsList.innerHTML = '<div class="empty-state">No matching vehicle found.</div>';
+        return;
+      }
+      els.searchResultsList.innerHTML = cars.map((car) => cardHtml(car)).join('');
+    } catch (error) {
+      els.searchResultsList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
     }
   }
 
-  async function startRecording() {
-    if (hasDueVehicleLock()) {
-      els.postStatus.textContent = 'First mark due vehicle as Sold or Still Available.';
-      renderAll();
-      return;
+  function simpleTextToFilters(text) {
+    const t = String(text || '').toLowerCase();
+    const filters = {};
+
+    const brands = ['toyota','honda','suzuki','kia','hyundai','mg','haval','chery','omoda','byd','ford','nissan','daihatsu','changan','proton'];
+    const cities = ['lahore','rawalpindi','islamabad','karachi','peshawar','multan','faisalabad','quetta','sialkot','attock','birmingham','london'];
+    const brand = brands.find((b) => t.includes(b));
+    const city = cities.find((c) => t.includes(c));
+    const year = t.match(/\b(19[5-9]\d|20[0-3]\d)\b/);
+
+    if (brand) filters.brand = titleCase(brand);
+    if (city) filters.city = titleCase(city);
+    if (year) filters.year = year[1];
+
+    const knownModels = ['corolla','yaris','hiace','prado','civic','city','alto','cultus','swift','cortina','fortuner','hilux','sportage','tucson'];
+    const model = knownModels.find((m) => t.includes(m) && !(m === 'city' && city));
+    if (model) filters.model = titleCase(model);
+
+    const lakhRange = t.match(/(\d+(?:\.\d+)?)\s*(?:lakh|lac).*?(?:to|se|say|-).*?(\d+(?:\.\d+)?)\s*(?:lakh|lac)/);
+    if (lakhRange) {
+      filters.minPrice = Math.round(Number(lakhRange[1]) * 100000);
+      filters.maxPrice = Math.round(Number(lakhRange[2]) * 100000);
     }
 
-    const profile = getProfile();
-    if (!profile || !profile.fullName || !profile.phone) {
-      els.postStatus.textContent = 'First save seller profile with name and phone number.';
-      showSection('profileSection');
-      return;
-    }
+    return filters;
+  }
 
+  function titleCase(v) {
+    return String(v || '').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  async function startRecording(mode) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-      els.postStatus.textContent = 'This browser does not support audio recording. Use Chrome on Android for testing.';
+      setModeStatus(mode, 'This browser does not support recording.');
       return;
     }
 
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+
+    activeRecordMode = mode;
     audioChunks = [];
-    els.transcriptBox.classList.add('hidden');
-    els.transcriptText.textContent = '';
-    els.postStatus.textContent = '';
 
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       });
 
-      const mimeType = getSupportedMimeType();
-      mediaRecorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : undefined);
+      mediaRecorder = new MediaRecorder(mediaStream);
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
 
-      mediaRecorder.addEventListener('dataavailable', (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
-      });
-
-      mediaRecorder.addEventListener('stop', async () => {
-        cleanupRecordingResources();
-        setRecordingUi(false, 'Uploading audio...');
-        els.recordBtn.disabled = true;
-
-        const blobType = mediaRecorder && mediaRecorder.mimeType ? mediaRecorder.mimeType : 'audio/webm';
-        const audioBlob = new Blob(audioChunks, { type: blobType });
+      mediaRecorder.onstop = async () => {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        setModeStatus(mode, 'Processing voice...');
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
 
         try {
-          const transcript = await uploadForTranscription(audioBlob);
-          handleTranscript(transcript);
-          setRecordingUi(false, 'Ready to record');
+          const result = await uploadAudio(blob, mode);
+          if (mode === 'search') handleVoiceSearchResult(result);
+          if (mode === 'post') handleVoicePostResult(result);
         } catch (error) {
-          console.error(error);
-          els.postStatus.textContent = `Transcription failed: ${error.message}`;
-          setRecordingUi(false, 'Transcription failed');
+          setModeStatus(mode, `Voice failed: ${error.message}`);
         } finally {
-          els.recordBtn.disabled = hasDueVehicleLock();
           mediaRecorder = null;
           audioChunks = [];
+          activeRecordMode = null;
         }
-      });
+      };
 
       mediaRecorder.start();
-      recordingStartedAt = Date.now();
-      updateRecordingTimer();
-      recordingTimerId = setInterval(updateRecordingTimer, 250);
-      maxRecordingTimerId = setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
-      }, MAX_RECORDING_SECONDS * 1000);
-
-      setRecordingUi(true, 'Recording... speak vehicle details clearly');
+      setModeStatus(mode, 'Recording... tap again to stop.');
+      setTimeout(() => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      }, Number(CONFIG.MAX_RECORDING_SECONDS || 75) * 1000);
     } catch (error) {
-      cleanupRecordingResources();
-      console.error(error);
-      els.postStatus.textContent = 'Microphone permission failed or recording could not start.';
-      setRecordingUi(false, 'Ready to record');
+      setModeStatus(mode, 'Microphone permission failed.');
     }
   }
 
-  function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      setRecordingUi(false, 'Stopping...');
+  async function uploadAudio(blob, mode) {
+    const form = new FormData();
+    form.append('audio', blob, 'drivepk-bolo.webm');
+    form.append('task', mode === 'search' ? 'vehicle_search' : 'vehicle_post');
+
+    const response = await fetch(CONFIG.TRANSCRIBE_URL, { method: 'POST', body: form });
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data) {
+      throw new Error(data?.error || `Server error ${response.status}`);
     }
+
+    return data;
   }
 
-  async function uploadForTranscription(audioBlob) {
-    if (!CONFIG.TRANSCRIBE_URL) {
-      throw new Error('TRANSCRIBE_URL is missing in config.js');
-    }
+  function handleVoiceSearchResult(result) {
+    const transcript = result.roman_transcript || result.transcript || result.text || '';
+    const aiFilters = result.filters || result.vehicle || {};
+    const fallback = simpleTextToFilters(transcript);
+    const filters = { ...fallback, ...compactObject(aiFilters) };
 
-    if (!audioBlob || audioBlob.size < 1000) {
-      throw new Error('Audio recording is too short. Please record again.');
-    }
+    els.listingSearchInput.value = transcript;
+    fillSearchInputs(filters);
+    els.voiceStatus.textContent = `Transcript: ${transcript}\nSearching...`;
+    searchCars(filters);
+  }
 
-    const extension = audioBlob.type.includes('mp4') ? 'm4a' : audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
-    const formData = new FormData();
-    formData.append('audio', audioBlob, `drivepk-vehicle-recording.${extension}`);
-    formData.append('language', 'auto');
-    formData.append('task', 'vehicle_post_ai_extract');
+  function fillSearchInputs(filters) {
+    if (filters.brand) els.brandInput.value = valueText(filters.brand);
+    if (filters.model || filters.carModel) els.modelInput.value = valueText(filters.model || filters.carModel);
+    if (filters.city) els.cityInput.value = valueText(filters.city);
+    if (filters.minPrice) els.minPriceInput.value = filters.minPrice;
+    if (filters.maxPrice) els.maxPriceInput.value = filters.maxPrice;
+    if (filters.year) els.yearInput.value = filters.year;
+  }
 
-    const response = await fetch(CONFIG.TRANSCRIBE_URL, {
-      method: 'POST',
-      body: formData
+  function handleVoicePostResult(result) {
+    const vehicle = result.vehicle || {};
+    const transcript = result.roman_transcript || result.transcript || result.text || '';
+
+    els.vehicleMake.value = valueText(vehicle.make || vehicle.brand);
+    els.vehicleModel.value = valueText(vehicle.model || vehicle.carModel);
+    els.vehicleYear.value = vehicle.year || '';
+    els.vehiclePrice.value = vehicle.price || '';
+    els.vehicleCity.value = vehicle.city || '';
+    els.vehicleColor.value = vehicle.color || '';
+    els.vehicleRegisteredIn.value = vehicle.registeredIn || vehicle.registrationState || '';
+    els.vehicleMileage.value = vehicle.mileage || '';
+    els.vehicleExtraInfo.value = vehicle.extraInfo || transcript || '';
+
+    els.postStatus.textContent = `Transcript: ${transcript}`;
+  }
+
+  function compactObject(obj) {
+    const out = {};
+    Object.entries(obj || {}).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && String(v).trim() !== '') out[k] = v;
     });
-
-    const contentType = response.headers.get('content-type') || '';
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      throw new Error(errorText || `Server error ${response.status}`);
-    }
-
-    if (contentType.includes('application/json')) {
-      const data = await response.json();
-      const transcript = data.roman_transcript || data.transcript || data.text || data.detected_text || data.result || '';
-      if (!transcript && !data.vehicle) throw new Error(data.error || 'No transcript returned by server.');
-      return {
-        transcript,
-        romanTranscript: data.roman_transcript || transcript,
-        vehicle: data.vehicle || null,
-        raw: data
-      };
-    }
-
-    const text = await response.text();
-    if (!text.trim()) throw new Error('Empty transcript returned by server.');
-    return { transcript: text.trim(), romanTranscript: text.trim(), vehicle: null };
+    return out;
   }
 
-  function numberOrEmpty(value) {
-    if (value === undefined || value === null || value === '') return '';
-    const number = Number(String(value).replace(/[^0-9.]/g, ''));
-    return Number.isFinite(number) && number > 0 ? Math.round(number) : '';
+  function setModeStatus(mode, text) {
+    if (mode === 'search') els.voiceStatus.textContent = text;
+    if (mode === 'post') els.postStatus.textContent = text;
   }
 
-  function aiVehicleToParsed(vehicle, transcript) {
-    const fallback = parseVehicleDetails(transcript || '');
-    if (!vehicle || typeof vehicle !== 'object') return fallback;
-
-    return {
-      make: vehicle.make || fallback.make || '',
-      model: vehicle.model || fallback.model || '',
-      year: numberOrEmpty(vehicle.year) || fallback.year || '',
-      price: numberOrEmpty(vehicle.price) || fallback.price || '',
-      city: vehicle.city || fallback.city || '',
-      color: vehicle.color || fallback.color || '',
-      registeredIn: vehicle.registeredIn || vehicle.registered_in || fallback.registeredIn || '',
-      mileage: numberOrEmpty(vehicle.mileage) || fallback.mileage || '',
-      extraInfo: vehicle.extraInfo || vehicle.extra_info || vehicle.description || transcript || fallback.extraInfo || ''
-    };
-  }
-
-  function handleTranscript(result) {
-    const transcript = typeof result === 'string' ? result : (result.romanTranscript || result.transcript || '');
-    const cleanTranscript = normalizeText(transcript);
-    els.transcriptBox.classList.remove('hidden');
-    els.transcriptText.textContent = cleanTranscript;
-
-    const parsed = result && typeof result === 'object' && result.vehicle
-      ? aiVehicleToParsed(result.vehicle, cleanTranscript)
-      : parseVehicleDetails(cleanTranscript);
-
-    applyParsedDetails(parsed);
-  }
-
-  function submitVehicle(event) {
-    event.preventDefault();
-
-    if (hasDueVehicleLock()) {
-      els.postStatus.textContent = 'First mark due vehicle as Sold or Still Available.';
-      renderAll();
-      return;
-    }
-
-    const profile = getProfile();
-    if (!profile || !profile.fullName || !profile.phone) {
-      els.postStatus.textContent = 'Seller profile is required before posting.';
-      showSection('profileSection');
-      return;
-    }
-
-    if (!els.vehicleForm.reportValidity()) return;
-
-    const vehicle = getVehicleFromForm(profile);
-    const vehicles = getVehicles();
-    vehicles.push(vehicle);
-    saveVehicles(vehicles);
-
-    resetVehicleForm();
-    renderAll();
-    showSection('homeSection');
-  }
-
-  function runSearch() {
-    const query = normalizeText(els.searchInput.value).toLowerCase();
-    const vehicles = getVehicles().filter((vehicle) => vehicle.active && vehicle.status === 'available');
-
-    if (!query) {
-      els.searchResults.className = 'vehicle-list empty-state';
-      els.searchResults.textContent = 'Type make, model, city, year, price or color to search.';
-      return;
-    }
-
-    const results = vehicles.filter((vehicle) => {
-      const haystack = [
-        vehicle.make,
-        vehicle.model,
-        vehicle.year,
-        vehicle.price,
-        vehicle.city,
-        vehicle.color,
-        vehicle.registeredIn,
-        vehicle.mileage,
-        vehicle.extraInfo,
-        vehicle.sellerName
-      ].join(' ').toLowerCase();
-      return haystack.includes(query);
+  function saveLocalPost() {
+    const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
+    const old = JSON.parse(localStorage.getItem(key) || '[]');
+    old.push({
+      title: `${els.vehicleMake.value} ${els.vehicleModel.value} ${els.vehicleYear.value}`.trim(),
+      brand: els.vehicleMake.value,
+      carModel: els.vehicleModel.value,
+      year: els.vehicleYear.value,
+      price: Number(els.vehiclePrice.value || 0),
+      city: els.vehicleCity.value,
+      color: els.vehicleColor.value,
+      registrationState: els.vehicleRegisteredIn.value,
+      mileage: Number(els.vehicleMileage.value || 0),
+      description: els.vehicleExtraInfo.value,
+      createdAt: new Date().toISOString()
     });
-
-    if (!results.length) {
-      els.searchResults.className = 'vehicle-list empty-state';
-      els.searchResults.textContent = 'No matching active vehicle found in this browser.';
-      return;
-    }
-
-    els.searchResults.className = 'vehicle-list';
-    els.searchResults.innerHTML = results.map((vehicle) => vehicleCardHtml(vehicle)).join('');
+    localStorage.setItem(key, JSON.stringify(old));
+    els.postStatus.textContent = 'Demo post saved in this browser.';
   }
 
-  function bindEvents() {
-    els.navButtons.forEach((button) => {
-      button.addEventListener('click', () => showSection(button.dataset.section));
-    });
+  function resetPost() {
+    ['vehicleMake','vehicleModel','vehicleYear','vehiclePrice','vehicleCity','vehicleColor','vehicleRegisteredIn','vehicleMileage','vehicleExtraInfo']
+      .forEach((k) => els[k].value = '');
+    els.postStatus.textContent = 'Ready to record';
+  }
 
-    els.goPostBtn.addEventListener('click', () => showSection('postSection'));
-    els.goProfileBtn.addEventListener('click', () => showSection('profileSection'));
+  function bind() {
+    els.tabs.forEach((tab) => tab.addEventListener('click', () => showScreen(tab.dataset.target)));
+    els.openSearchBtn.addEventListener('click', () => showScreen('listingScreen'));
+    els.viewAllBtn.addEventListener('click', () => showScreen('listingScreen'));
+    els.backHomeBtn.addEventListener('click', () => showScreen('homeScreen'));
+    els.backFromPostBtn.addEventListener('click', () => showScreen('homeScreen'));
 
-    els.profileForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const profile = getProfileFromForm();
-      if (!profile.fullName || !profile.phone) {
-        els.profileSaveStatus.textContent = 'Name and phone number are required.';
-        return;
-      }
-      saveProfile(profile);
-      els.profileSaveStatus.textContent = 'Profile saved in this browser.';
-
-      if (!els.vehicleCity.value.trim() && profile.city) {
-        els.vehicleCity.value = profile.city;
+    els.homeSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        els.listingSearchInput.value = els.homeSearchInput.value;
+        showScreen('listingScreen');
+        searchCars({ carName: els.homeSearchInput.value });
       }
     });
 
-    els.clearProfileBtn.addEventListener('click', () => {
-      localStorage.removeItem(storageKey('PROFILE'));
-      els.profileForm.reset();
-      els.profileSaveStatus.textContent = 'Profile cleared from this browser.';
+    $$('.category-grid button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filters = {};
+        if (btn.dataset.body) filters.bodyType = btn.dataset.body;
+        if (btn.dataset.category) filters.category = btn.dataset.category;
+        if (btn.dataset.fuel) filters.fuelType = btn.dataset.fuel;
+        showScreen('listingScreen');
+        searchCars(filters);
+      });
     });
 
-    els.playGuideBtn.addEventListener('click', playGuideSafe);
+    els.runSearchBtn.addEventListener('click', () => searchCars());
+    els.voiceSearchBtn.addEventListener('click', () => startRecording('search'));
+    els.postVoiceBtn.addEventListener('click', () => startRecording('post'));
+    els.resetPostBtn.addEventListener('click', resetPost);
+    els.saveLocalPostBtn.addEventListener('click', saveLocalPost);
 
-    els.recordBtn.addEventListener('click', () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    });
-
-    els.resetPostBtn.addEventListener('click', resetVehicleForm);
-    els.vehicleForm.addEventListener('submit', submitVehicle);
-
-    els.dueList.addEventListener('click', (event) => {
-      const soldButton = event.target.closest('.mark-sold-btn');
-      const availableButton = event.target.closest('.mark-available-btn');
-
-      if (soldButton) updateVehicleStatus(soldButton.dataset.id, 'sold');
-      if (availableButton) updateVehicleStatus(availableButton.dataset.id, 'available');
-    });
-
-    els.clearSoldBtn.addEventListener('click', () => {
-      const activeOrAvailable = getVehicles().filter((vehicle) => vehicle.status !== 'sold');
-      saveVehicles(activeOrAvailable);
-      renderAll();
-    });
-
-    els.searchBtn.addEventListener('click', runSearch);
-    els.searchInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') runSearch();
-    });
-
-    window.addEventListener('beforeunload', () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
-      cleanupRecordingResources();
+    els.listingSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchCars();
     });
   }
 
-  function boot() {
-    loadProfileIntoForm();
-    const profile = getProfile();
-    if (profile && profile.city) {
-      els.vehicleCity.value = profile.city;
-    }
-
-    bindEvents();
-    renderAll();
-
-    setInterval(renderAll, 30 * 1000);
-  }
-
-  boot();
+  bind();
+  loadHome();
 })();
