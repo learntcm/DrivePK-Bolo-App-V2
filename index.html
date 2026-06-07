@@ -8,9 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <noscript>
-    <div class="noscript">This app needs JavaScript enabled.</div>
-  </noscript>
+  <noscript><div class="noscript">This app needs JavaScript enabled.</div></noscript>
 
   <header class="app-header">
     <div class="brand-block">
@@ -45,36 +43,19 @@
       </div>
 
       <div class="stats-grid" aria-label="Vehicle status summary">
-        <div class="stat-card">
-          <span id="totalVehicles">0</span>
-          <small>Total Vehicles</small>
-        </div>
-        <div class="stat-card">
-          <span id="activeVehicles">0</span>
-          <small>Active Vehicles</small>
-        </div>
-        <div class="stat-card warning-stat">
-          <span id="dueVehicles">0</span>
-          <small>Need Sold / Available</small>
-        </div>
+        <div class="stat-card"><span id="totalVehicles">0</span><small>Total Vehicles</small></div>
+        <div class="stat-card"><span id="activeVehicles">0</span><small>Active Vehicles</small></div>
+        <div class="stat-card warning-stat"><span id="dueVehicles">0</span><small>Need Sold / Available</small></div>
       </div>
 
       <div class="panel hidden" id="duePanel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Required Action</p>
-            <h3>Update vehicle status first</h3>
-          </div>
-        </div>
+        <div class="panel-heading"><div><p class="eyebrow">Required Action</p><h3>Update vehicle status first</h3></div></div>
         <div id="dueList" class="vehicle-list"></div>
       </div>
 
       <div class="panel">
         <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Recent Posts</p>
-            <h3>Saved in this browser</h3>
-          </div>
+          <div><p class="eyebrow">Recent Posts</p><h3>Saved in this browser</h3></div>
           <button class="ghost-btn" id="clearSoldBtn" type="button">Clear Sold</button>
         </div>
         <div id="recentVehicles" class="vehicle-list empty-state">No vehicle posted yet.</div>
@@ -84,45 +65,21 @@
     <section class="section" id="profileSection">
       <div class="panel">
         <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Signup Profile</p>
-            <h2>Seller details</h2>
-          </div>
+          <div><p class="eyebrow">Signup Profile</p><h2>Seller details</h2></div>
           <span class="mini-badge">Browser testing</span>
         </div>
 
         <form id="profileForm" class="form-grid" autocomplete="on">
-          <label>
-            Full Name <strong>*</strong>
-            <input id="profileName" name="fullName" type="text" placeholder="Example: Dr Khan" required />
-          </label>
-
-          <label>
-            Main Phone Number <strong>*</strong>
-            <input id="profilePhone" name="phone" type="tel" inputmode="tel" placeholder="03001234567" required />
-          </label>
-
-          <label>
-            WhatsApp / Second Number
-            <input id="profileWhatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="Optional" />
-          </label>
-
-          <label>
-            City
-            <input id="profileCity" name="city" type="text" placeholder="Rawalpindi" />
-          </label>
-
-          <label class="full-width">
-            Email
-            <input id="profileEmail" name="email" type="email" placeholder="Optional" />
-          </label>
-
+          <label>Full Name <strong>*</strong><input id="profileName" name="fullName" type="text" placeholder="Example: Dr Khan" required /></label>
+          <label>Main Phone Number <strong>*</strong><input id="profilePhone" name="phone" type="tel" inputmode="tel" placeholder="03001234567" required /></label>
+          <label>WhatsApp / Second Number<input id="profileWhatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="Optional" /></label>
+          <label>City<input id="profileCity" name="city" type="text" placeholder="Rawalpindi" /></label>
+          <label class="full-width">Email<input id="profileEmail" name="email" type="email" placeholder="Optional" /></label>
           <div class="form-actions full-width">
             <button class="primary-btn" type="submit">Save Profile</button>
             <button class="secondary-btn" id="clearProfileBtn" type="button">Clear Profile</button>
           </div>
         </form>
-
         <p class="helper-text" id="profileSaveStatus"></p>
       </div>
     </section>
@@ -130,17 +87,14 @@
     <section class="section" id="postSection">
       <div class="panel">
         <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Post Vehicle</p>
-            <h2>Bolo app will fill the form</h2>
-          </div>
+          <div><p class="eyebrow">Post Vehicle</p><h2>Bolo app will fill the form</h2></div>
           <span class="mini-badge">10 min expiry</span>
         </div>
 
         <div class="voice-box">
           <div>
-            <h3>Urdu/Roman Urdu voice guide</h3>
-            <p id="voiceGuideText">Record dabain aur gaari ki tafseel bolain: company, model, year, price, city, color, registration, mileage aur extra info.</p>
+            <h3>Roman Urdu / English voice guide</h3>
+            <p id="voiceGuideText">Record dabain aur gaari ki details bolain: company, model, year, price, city, color, registration, mileage aur extra info.</p>
           </div>
           <button class="secondary-btn" id="playGuideBtn" type="button">Play Guide</button>
         </div>
@@ -148,10 +102,7 @@
         <div class="recorder-card" id="recorderCard">
           <div class="record-state">
             <span class="record-dot" id="recordDot"></span>
-            <div>
-              <strong id="recordingStatus">Ready to record</strong>
-              <small id="recordTimer">00:00</small>
-            </div>
+            <div><strong id="recordingStatus">Ready to record</strong><small id="recordTimer">00:00</small></div>
           </div>
           <div class="recorder-actions">
             <button class="primary-btn" id="recordBtn" type="button">Start Recording</button>
@@ -160,76 +111,27 @@
           <p class="helper-text" id="recordingHelp">This uses MediaRecorder audio upload. It does not use browser SpeechRecognition.</p>
         </div>
 
-        <div class="transcript-box hidden" id="transcriptBox">
-          <p class="eyebrow">Transcript</p>
-          <p id="transcriptText"></p>
-        </div>
+        <div class="transcript-box hidden" id="transcriptBox"><p class="eyebrow">Transcript</p><p id="transcriptText"></p></div>
 
         <form id="vehicleForm" class="form-grid vehicle-form">
-          <label>
-            Make / Company <strong>*</strong>
-            <input id="vehicleMake" name="make" type="text" placeholder="Toyota" required />
-          </label>
-
-          <label>
-            Model <strong>*</strong>
-            <input id="vehicleModel" name="model" type="text" placeholder="Yaris" required />
-          </label>
-
-          <label>
-            Model Year <strong>*</strong>
-            <input id="vehicleYear" name="year" type="number" inputmode="numeric" min="1980" max="2035" placeholder="2022" required />
-          </label>
-
-          <label>
-            Price PKR <strong>*</strong>
-            <input id="vehiclePrice" name="price" type="number" inputmode="numeric" min="1" placeholder="4500000" required />
-          </label>
-
-          <label>
-            City <strong>*</strong>
-            <input id="vehicleCity" name="city" type="text" placeholder="Lahore" required />
-          </label>
-
-          <label>
-            Color
-            <input id="vehicleColor" name="color" type="text" placeholder="White" />
-          </label>
-
-          <label>
-            Registered In
-            <input id="vehicleRegisteredIn" name="registeredIn" type="text" placeholder="Islamabad" />
-          </label>
-
-          <label>
-            Mileage KM
-            <input id="vehicleMileage" name="mileage" type="number" inputmode="numeric" min="0" placeholder="45000" />
-          </label>
-
-          <label class="full-width">
-            Additional Tafseel
-            <textarea id="vehicleExtraInfo" name="extraInfo" rows="5" placeholder="Condition, variant, features, accident status, documents, etc."></textarea>
-          </label>
-
-          <div class="form-actions full-width">
-            <button class="primary-btn" id="submitVehicleBtn" type="submit">Post Vehicle</button>
-          </div>
+          <label>Make / Company <strong>*</strong><input id="vehicleMake" name="make" type="text" placeholder="Toyota" required /></label>
+          <label>Model <strong>*</strong><input id="vehicleModel" name="model" type="text" placeholder="Hiace" required /></label>
+          <label>Model Year <strong>*</strong><input id="vehicleYear" name="year" type="number" inputmode="numeric" min="1980" max="2035" placeholder="2022" required /></label>
+          <label>Price PKR <strong>*</strong><input id="vehiclePrice" name="price" type="number" inputmode="numeric" min="1" placeholder="4500000" required /></label>
+          <label>City <strong>*</strong><input id="vehicleCity" name="city" type="text" placeholder="Rawalpindi" required /></label>
+          <label>Color<input id="vehicleColor" name="color" type="text" placeholder="White" /></label>
+          <label>Registered In<input id="vehicleRegisteredIn" name="registeredIn" type="text" placeholder="Islamabad" /></label>
+          <label>Mileage KM<input id="vehicleMileage" name="mileage" type="number" inputmode="numeric" min="0" placeholder="45000" /></label>
+          <label class="full-width">Additional Details<textarea id="vehicleExtraInfo" name="extraInfo" rows="5" placeholder="Condition, variant, features, accident status, documents, etc."></textarea></label>
+          <div class="form-actions full-width"><button class="primary-btn" id="submitVehicleBtn" type="submit">Post Vehicle</button></div>
         </form>
-
         <p class="helper-text strong-helper" id="postStatus"></p>
       </div>
     </section>
 
     <section class="section" id="searchSection">
       <div class="panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Typed Search First</p>
-            <h2>Find vehicle</h2>
-          </div>
-          <span class="mini-badge">Voice search later</span>
-        </div>
-
+        <div class="panel-heading"><div><p class="eyebrow">Typed Search First</p><h2>Find vehicle</h2></div><span class="mini-badge">Voice search later</span></div>
         <div class="search-row">
           <input id="searchInput" type="search" placeholder="Search by make, model, city, year, price..." />
           <button class="primary-btn" id="searchBtn" type="button">Search</button>
@@ -239,12 +141,8 @@
     </section>
   </main>
 
-  <footer class="app-footer">
-    <p>DrivePK Bolo V2 · Browser storage testing · Server transcription for posting</p>
-  </footer>
-
+  <footer class="app-footer"><p>DrivePK Bolo V2 · Browser storage testing · Server transcription for posting</p></footer>
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
-
