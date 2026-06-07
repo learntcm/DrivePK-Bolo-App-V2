@@ -68,7 +68,7 @@
   let activeGuideAudio = null;
 
   const makeModels = {
-    Toyota: ['Corolla', 'Yaris', 'Aqua', 'Prius', 'Vitz', 'Passo', 'Fortuner', 'Hilux', 'Revo', 'Prado', 'Land Cruiser', 'Grande', 'Altis'],
+    Toyota: ['Land Cruiser', 'Corolla', 'Yaris', 'Aqua', 'Prius', 'Vitz', 'Passo', 'Fortuner', 'Hilux', 'Revo', 'Prado', 'Hiace', 'Hi Ace', 'Coaster', 'Grande', 'Altis'],
     Honda: ['City', 'Civic', 'BR-V', 'Vezel', 'Fit', 'Grace', 'Accord', 'HR-V'],
     Suzuki: ['Alto', 'Cultus', 'Wagon R', 'Swift', 'Mehran', 'Bolan', 'Ravi', 'Ciaz', 'Baleno', 'Every'],
     Daihatsu: ['Mira', 'Move', 'Hijet', 'Cuore', 'Cast', 'Tanto'],
@@ -402,24 +402,47 @@
     return sorted.find((item) => clean.includes(` ${item.toLowerCase()} `)) || '';
   }
 
+  function wordPattern(value) {
+    return new RegExp(`\\b${String(value).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&').replace(/\\s+/g, '\\s+')}\\b`, 'i');
+  }
+
+  function hasWord(text, value) {
+    return wordPattern(value).test(text);
+  }
+
+  function isHondaCityAsLocation(text) {
+    return /\\bcity\\s*(?:is|hai|hy|=|:)?\\s+[a-z]/i.test(text);
+  }
+
   function extractMakeModel(text) {
-    const lower = ` ${text.toLowerCase()} `;
+    const clean = normalizeText(text);
     let detectedMake = '';
     let detectedModel = '';
 
-    Object.entries(makeModels).some(([make, models]) => {
-      if (lower.includes(` ${make.toLowerCase()} `)) {
+    Object.keys(makeModels).some((make) => {
+      if (hasWord(clean, make)) {
         detectedMake = make;
+        return true;
       }
+      return false;
+    });
 
+    const searchModels = detectedMake ? [[detectedMake, makeModels[detectedMake]]] : Object.entries(makeModels);
+
+    searchModels.some(([make, models]) => {
       const matchedModel = models
         .slice()
         .sort((a, b) => b.length - a.length)
-        .find((model) => lower.includes(` ${model.toLowerCase()} `));
+        .find((model) => {
+          if (model.toLowerCase() === 'city' && isHondaCityAsLocation(clean) && !hasWord(clean, 'Honda')) {
+            return false;
+          }
+          return hasWord(clean, model);
+        });
 
       if (matchedModel) {
         detectedMake = make;
-        detectedModel = matchedModel;
+        detectedModel = matchedModel === 'Hi Ace' ? 'Hiace' : matchedModel;
         return true;
       }
 
@@ -436,10 +459,10 @@
 
   function extractPrice(text) {
     const clean = text.toLowerCase();
-    const croreMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(crore|cror|karor|کروڑ)/i);
+    const croreMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(crore|cror|karor)/i);
     if (croreMatch) return Math.round(Number(croreMatch[1]) * 10000000);
 
-    const lakhMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(lakh|lac|lak|لاکھ)/i);
+    const lakhMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(lakh|lac|lak)/i);
     if (lakhMatch) return Math.round(Number(lakhMatch[1]) * 100000);
 
     const millionMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*million/i);
@@ -561,7 +584,7 @@
   }
 
   async function playGuideSafe() {
-    const text = 'Assalam o Alaikum. Post vehicle ke liye record button dabain. Company, model, year, price, city, color, registration, mileage aur extra tafseel wazeh bolain.';
+    const text = 'Assalam o Alaikum. Post vehicle ke liye record button dabain. Company, model, year, price, city, color, registration, mileage aur extra details clear bolain.';
     try {
       await playTextWithServerVoice(text);
     } catch (error) {
@@ -708,7 +731,7 @@
     const extension = audioBlob.type.includes('mp4') ? 'm4a' : audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
     const formData = new FormData();
     formData.append('audio', audioBlob, `drivepk-vehicle-recording.${extension}`);
-    formData.append('language', 'ur');
+    formData.append('language', 'en');
     formData.append('task', 'vehicle_post');
 
     const response = await fetch(CONFIG.TRANSCRIBE_URL, {
@@ -889,4 +912,3 @@
 
   boot();
 })();
-
