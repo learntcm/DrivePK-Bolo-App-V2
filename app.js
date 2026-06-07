@@ -31,6 +31,11 @@
     resetPostBtn: $('#resetPostBtn'),
     postStatus: $('#postStatus'),
     saveLocalPostBtn: $('#saveLocalPostBtn'),
+    vehicleImages: $('#vehicleImages'),
+    vehicleCamera: $('#vehicleCamera'),
+    cameraImageBtn: $('#cameraImageBtn'),
+    imagePreviewGrid: $('#imagePreviewGrid'),
+    imageStatus: $('#imageStatus'),
     vehicleMake: $('#vehicleMake'),
     vehicleModel: $('#vehicleModel'),
     vehicleYear: $('#vehicleYear'),
@@ -46,6 +51,7 @@
   let mediaStream = null;
   let audioChunks = [];
   let activeRecordMode = null;
+  let selectedImages = [];
 
   function showScreen(id) {
     els.screens.forEach((s) => s.classList.toggle('active', s.id === id));
@@ -87,6 +93,13 @@
     return car?.location?.city || car?.currentLocation?.city || car.city || '-';
   }
 
+  function carUrl(car) {
+    if (car.url) return car.url;
+    if (car.slug) return `https://drivepk.com/car/${car.slug}`;
+    if (car._id) return `https://drivepk.com/cars/${car._id}`;
+    return '';
+  }
+
   function cardHtml(car, compact = false) {
     const title = getTitle(car);
     const price = money(car.price);
@@ -98,8 +111,9 @@
     const badge = car.adType === 'featured' || car.boosterActive ? '<span class="badge">FEATURED PRO</span>' : '';
 
     if (compact) {
-      return `
-        <article class="feature-card">
+      const url = carUrl(car);
+    return `
+        <article class="feature-card" ${url ? `data-url="${escapeAttr(url)}"` : ""}>
           <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
           <div class="feature-body">
             ${badge}
@@ -112,7 +126,7 @@
     }
 
     return `
-      <article class="list-card">
+      <article class="list-card" ${url ? `data-url="${escapeAttr(url)}"` : ""}>
         <img src="${escapeAttr(img)}" alt="${escapeAttr(title)}" loading="lazy" />
         <div class="list-body">
           ${badge}
@@ -120,6 +134,13 @@
           <div class="meta">${escapeHtml(city)} · ${escapeHtml(mileage)}</div>
           <div class="meta">${escapeHtml(color)} ${escapeHtml(reg)}</div>
           <div class="price">${escapeHtml(price)}</div>
+          ${car.description ? `<div class="meta">${escapeHtml(car.description).slice(0, 130)}</div>` : ''}
+          ${car.id && String(car.id).startsWith('local_') ? `
+            <div class="local-actions">
+              <button class="mark-available-btn" data-id="${escapeAttr(car.id)}" type="button">Still Available</button>
+              <button class="mark-sold-btn" data-id="${escapeAttr(car.id)}" type="button">Sold</button>
+            </div>
+          ` : ''}
         </div>
       </article>
     `;
@@ -270,6 +291,8 @@
 
     if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
+      if (mode === 'post') els.postVoiceBtn.textContent = '🎙 Start Recording';
+      if (mode === 'search') els.voiceSearchBtn.textContent = '🎙';
       return;
     }
 
@@ -288,6 +311,8 @@
 
       mediaRecorder.onstop = async () => {
         mediaStream.getTracks().forEach((track) => track.stop());
+        if (mode === 'post') els.postVoiceBtn.textContent = '🎙 Start Recording';
+        if (mode === 'search') els.voiceSearchBtn.textContent = '🎙';
         setModeStatus(mode, 'Processing voice...');
         const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
 
@@ -305,7 +330,9 @@
       };
 
       mediaRecorder.start();
-      setModeStatus(mode, 'Recording... tap again to stop.');
+      if (mode === 'post') els.postVoiceBtn.textContent = '⏹ Stop Recording';
+      if (mode === 'search') els.voiceSearchBtn.textContent = '⏹';
+      setModeStatus(mode, 'Recording... tap again to stop. Auto stop after 60 seconds.');
       setTimeout(() => {
         if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
       }, Number(CONFIG.MAX_RECORDING_SECONDS || 75) * 1000);
@@ -362,7 +389,8 @@
     els.vehicleColor.value = vehicle.color || '';
     els.vehicleRegisteredIn.value = vehicle.registeredIn || vehicle.registrationState || '';
     els.vehicleMileage.value = vehicle.mileage || '';
-    els.vehicleExtraInfo.value = vehicle.extraInfo || transcript || '';
+    const extra = vehicle.extraInfo ? `${vehicle.extraInfo}\n\nTranscript: ${transcript}` : transcript;
+    els.vehicleExtraInfo.value = extra || '';
 
     els.postStatus.textContent = `Transcript: ${transcript}`;
   }
@@ -380,24 +408,97 @@
     if (mode === 'post') els.postStatus.textContent = text;
   }
 
+  
+  function renderSelectedImages() {
+    if (!els.imagePreviewGrid) return;
+    if (!selectedImages.length) {
+      els.imagePreviewGrid.innerHTML = '';
+      els.imageStatus.textContent = 'No images selected.';
+      return;
+    }
+
+    els.imagePreviewGrid.innerHTML = selectedImages.map((item, index) => `
+      <div class="image-thumb">
+        <img src="${escapeAttr(item.dataUrl)}" alt="Vehicle image ${index + 1}" />
+        <button type="button" data-index="${index}" class="remove-image-btn">×</button>
+      </div>
+    `).join('');
+    els.imageStatus.textContent = `${selectedImages.length}/20 images selected.`;
+  }
+
+  function addImageFiles(fileList) {
+    const files = Array.from(fileList || []).filter((file) => file.type.startsWith('image/'));
+    const availableSlots = Math.max(0, 20 - selectedImages.length);
+    const limited = files.slice(0, availableSlots);
+
+    if (!limited.length) {
+      renderSelectedImages();
+      return;
+    }
+
+    let loaded = 0;
+    limited.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        selectedImages.push({ name: file.name, dataUrl: reader.result });
+        loaded += 1;
+        if (loaded === limited.length) renderSelectedImages();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeSelectedImage(index) {
+    selectedImages.splice(index, 1);
+    renderSelectedImages();
+  }
+
+  
+  function updateLocalStatus(id, status) {
+    const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
+    const posts = JSON.parse(localStorage.getItem(key) || '[]');
+    const updated = posts.map((car) => {
+      if (car.id !== id) return car;
+      if (status === 'sold') {
+        return { ...car, status: 'sold', active: false, soldAt: new Date().toISOString() };
+      }
+      return {
+        ...car,
+        status: 'available',
+        active: true,
+        nextCheckAt: Date.now() + Number(CONFIG.EXPIRY_MINUTES || 10) * 60 * 1000
+      };
+    });
+    localStorage.setItem(key, JSON.stringify(updated));
+    loadHome();
+  }
+
   function saveLocalPost() {
     const key = CONFIG.STORAGE_KEYS?.VEHICLES || 'drivepk_bolo_v2_vehicles';
     const old = JSON.parse(localStorage.getItem(key) || '[]');
+    const now = Date.now();
     old.push({
+      id: `local_${now}`,
       title: `${els.vehicleMake.value} ${els.vehicleModel.value} ${els.vehicleYear.value}`.trim(),
       brand: els.vehicleMake.value,
       carModel: els.vehicleModel.value,
       year: els.vehicleYear.value,
       price: Number(els.vehiclePrice.value || 0),
       city: els.vehicleCity.value,
+      location: { city: els.vehicleCity.value },
       color: els.vehicleColor.value,
       registrationState: els.vehicleRegisteredIn.value,
       mileage: Number(els.vehicleMileage.value || 0),
       description: els.vehicleExtraInfo.value,
+      images: selectedImages.map((item) => item.dataUrl),
+      status: 'available',
+      active: true,
+      nextCheckAt: now + Number(CONFIG.EXPIRY_MINUTES || 10) * 60 * 1000,
       createdAt: new Date().toISOString()
     });
     localStorage.setItem(key, JSON.stringify(old));
-    els.postStatus.textContent = 'Demo post saved in this browser.';
+    resetPost();
+    els.postStatus.textContent = 'Demo post saved in this browser. Form reset.';
     loadHome();
     showScreen('homeScreen');
   }
@@ -405,6 +506,8 @@
   function resetPost() {
     ['vehicleMake','vehicleModel','vehicleYear','vehiclePrice','vehicleCity','vehicleColor','vehicleRegisteredIn','vehicleMileage','vehicleExtraInfo']
       .forEach((k) => els[k].value = '');
+    selectedImages = [];
+    renderSelectedImages();
     els.postStatus.textContent = 'Ready to record';
   }
 
@@ -439,6 +542,37 @@
     els.postVoiceBtn.addEventListener('click', () => startRecording('post'));
     els.resetPostBtn.addEventListener('click', resetPost);
     els.saveLocalPostBtn.addEventListener('click', saveLocalPost);
+
+    
+    document.addEventListener('click', (event) => {
+      const urlCard = event.target.closest('[data-url]');
+      if (urlCard) {
+        window.open(urlCard.dataset.url, '_blank', 'noopener');
+      }
+
+      const removeBtn = event.target.closest('.remove-image-btn');
+      if (removeBtn) {
+        removeSelectedImage(Number(removeBtn.dataset.index));
+      }
+
+      const soldBtn = event.target.closest('.mark-sold-btn');
+      const availableBtn = event.target.closest('.mark-available-btn');
+      if (soldBtn || availableBtn) {
+        updateLocalStatus((soldBtn || availableBtn).dataset.id, soldBtn ? 'sold' : 'available');
+      }
+    });
+
+    if (els.vehicleImages) {
+      els.vehicleImages.addEventListener('change', (event) => addImageFiles(event.target.files));
+    }
+
+    if (els.vehicleCamera) {
+      els.vehicleCamera.addEventListener('change', (event) => addImageFiles(event.target.files));
+    }
+
+    if (els.cameraImageBtn) {
+      els.cameraImageBtn.addEventListener('click', () => els.vehicleCamera.click());
+    }
 
     els.listingSearchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') searchCars();
