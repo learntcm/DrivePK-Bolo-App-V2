@@ -68,7 +68,7 @@
   let activeGuideAudio = null;
 
   const makeModels = {
-    Toyota: ['Land Cruiser', 'Corolla', 'Yaris', 'Aqua', 'Prius', 'Vitz', 'Passo', 'Fortuner', 'Hilux', 'Revo', 'Prado', 'Hiace', 'Hi Ace', 'Coaster', 'Grande', 'Altis'],
+    Toyota: ['Corolla', 'Yaris', 'Aqua', 'Prius', 'Vitz', 'Passo', 'Fortuner', 'Hilux', 'Revo', 'Prado', 'Land Cruiser', 'Grande', 'Altis', 'Hiace', 'Coaster', 'TownAce', 'Raize', 'Rush', 'Camry'],
     Honda: ['City', 'Civic', 'BR-V', 'Vezel', 'Fit', 'Grace', 'Accord', 'HR-V'],
     Suzuki: ['Alto', 'Cultus', 'Wagon R', 'Swift', 'Mehran', 'Bolan', 'Ravi', 'Ciaz', 'Baleno', 'Every'],
     Daihatsu: ['Mira', 'Move', 'Hijet', 'Cuore', 'Cast', 'Tanto'],
@@ -84,7 +84,8 @@
     Jaecoo: ['J7', 'J8'],
     Proton: ['Saga', 'X70'],
     BAIC: ['BJ40', 'D20'],
-    DFSK: ['Glory 580', 'Glory 500', 'C37']
+    DFSK: ['Glory 580', 'Glory 500', 'C37'],
+    Ford: ['Cortina', 'Escort', 'Mustang', 'Ranger', 'F-150', 'Focus', 'Fiesta', 'Transit']
   };
 
   const cityList = [
@@ -402,47 +403,24 @@
     return sorted.find((item) => clean.includes(` ${item.toLowerCase()} `)) || '';
   }
 
-  function wordPattern(value) {
-    return new RegExp(`\\b${String(value).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&').replace(/\\s+/g, '\\s+')}\\b`, 'i');
-  }
-
-  function hasWord(text, value) {
-    return wordPattern(value).test(text);
-  }
-
-  function isHondaCityAsLocation(text) {
-    return /\\bcity\\s*(?:is|hai|hy|=|:)?\\s+[a-z]/i.test(text);
-  }
-
   function extractMakeModel(text) {
-    const clean = normalizeText(text);
+    const lower = ` ${text.toLowerCase()} `;
     let detectedMake = '';
     let detectedModel = '';
 
-    Object.keys(makeModels).some((make) => {
-      if (hasWord(clean, make)) {
+    Object.entries(makeModels).some(([make, models]) => {
+      if (lower.includes(` ${make.toLowerCase()} `)) {
         detectedMake = make;
-        return true;
       }
-      return false;
-    });
 
-    const searchModels = detectedMake ? [[detectedMake, makeModels[detectedMake]]] : Object.entries(makeModels);
-
-    searchModels.some(([make, models]) => {
       const matchedModel = models
         .slice()
         .sort((a, b) => b.length - a.length)
-        .find((model) => {
-          if (model.toLowerCase() === 'city' && isHondaCityAsLocation(clean) && !hasWord(clean, 'Honda')) {
-            return false;
-          }
-          return hasWord(clean, model);
-        });
+        .find((model) => lower.includes(` ${model.toLowerCase()} `));
 
       if (matchedModel) {
         detectedMake = make;
-        detectedModel = matchedModel === 'Hi Ace' ? 'Hiace' : matchedModel;
+        detectedModel = matchedModel;
         return true;
       }
 
@@ -459,10 +437,10 @@
 
   function extractPrice(text) {
     const clean = text.toLowerCase();
-    const croreMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(crore|cror|karor)/i);
+    const croreMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(crore|cror|karor|کروڑ)/i);
     if (croreMatch) return Math.round(Number(croreMatch[1]) * 10000000);
 
-    const lakhMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(lakh|lac|lak)/i);
+    const lakhMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*(lakh|lac|lak|لاکھ)/i);
     if (lakhMatch) return Math.round(Number(lakhMatch[1]) * 100000);
 
     const millionMatch = clean.match(/(?:price|demand|qeemat|keemat|rate|rs|pkr|rupees)?\s*(\d+(?:\.\d+)?)\s*million/i);
@@ -584,7 +562,7 @@
   }
 
   async function playGuideSafe() {
-    const text = 'Assalam o Alaikum. Post vehicle ke liye record button dabain. Company, model, year, price, city, color, registration, mileage aur extra details clear bolain.';
+    const text = 'Assalam o Alaikum. Post vehicle ke liye record button dabain. Company, model, year, price, city, color, registration, mileage aur extra tafseel wazeh bolain.';
     try {
       await playTextWithServerVoice(text);
     } catch (error) {
@@ -731,10 +709,8 @@
     const extension = audioBlob.type.includes('mp4') ? 'm4a' : audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
     const formData = new FormData();
     formData.append('audio', audioBlob, `drivepk-vehicle-recording.${extension}`);
-    formData.append('language', 'en');
-    formData.append('mode', 'translate_to_english');
-    formData.append('roman_output', '1');
-    formData.append('task', 'vehicle_post');
+    formData.append('language', 'auto');
+    formData.append('task', 'vehicle_post_ai_extract');
 
     const response = await fetch(CONFIG.TRANSCRIBE_URL, {
       method: 'POST',
@@ -749,22 +725,54 @@
 
     if (contentType.includes('application/json')) {
       const data = await response.json();
-      const transcript = data.transcript || data.text || data.detected_text || data.result || '';
-      if (!transcript) throw new Error(data.error || 'No transcript returned by server.');
-      return transcript;
+      const transcript = data.roman_transcript || data.transcript || data.text || data.detected_text || data.result || '';
+      if (!transcript && !data.vehicle) throw new Error(data.error || 'No transcript returned by server.');
+      return {
+        transcript,
+        romanTranscript: data.roman_transcript || transcript,
+        vehicle: data.vehicle || null,
+        raw: data
+      };
     }
 
     const text = await response.text();
     if (!text.trim()) throw new Error('Empty transcript returned by server.');
-    return text.trim();
+    return { transcript: text.trim(), romanTranscript: text.trim(), vehicle: null };
   }
 
-  function handleTranscript(transcript) {
+  function numberOrEmpty(value) {
+    if (value === undefined || value === null || value === '') return '';
+    const number = Number(String(value).replace(/[^0-9.]/g, ''));
+    return Number.isFinite(number) && number > 0 ? Math.round(number) : '';
+  }
+
+  function aiVehicleToParsed(vehicle, transcript) {
+    const fallback = parseVehicleDetails(transcript || '');
+    if (!vehicle || typeof vehicle !== 'object') return fallback;
+
+    return {
+      make: vehicle.make || fallback.make || '',
+      model: vehicle.model || fallback.model || '',
+      year: numberOrEmpty(vehicle.year) || fallback.year || '',
+      price: numberOrEmpty(vehicle.price) || fallback.price || '',
+      city: vehicle.city || fallback.city || '',
+      color: vehicle.color || fallback.color || '',
+      registeredIn: vehicle.registeredIn || vehicle.registered_in || fallback.registeredIn || '',
+      mileage: numberOrEmpty(vehicle.mileage) || fallback.mileage || '',
+      extraInfo: vehicle.extraInfo || vehicle.extra_info || vehicle.description || transcript || fallback.extraInfo || ''
+    };
+  }
+
+  function handleTranscript(result) {
+    const transcript = typeof result === 'string' ? result : (result.romanTranscript || result.transcript || '');
     const cleanTranscript = normalizeText(transcript);
     els.transcriptBox.classList.remove('hidden');
     els.transcriptText.textContent = cleanTranscript;
 
-    const parsed = parseVehicleDetails(cleanTranscript);
+    const parsed = result && typeof result === 'object' && result.vehicle
+      ? aiVehicleToParsed(result.vehicle, cleanTranscript)
+      : parseVehicleDetails(cleanTranscript);
+
     applyParsedDetails(parsed);
   }
 
