@@ -102,6 +102,16 @@
         <div class="voice-status" id="postStatus">Ready to record</div>
       </section>
 
+      <section class="image-upload-card">
+        <h2>Vehicle Images</h2>
+        <p>Add images from gallery or camera. Maximum 20 images.</p>
+        <input id="vehicleImages" type="file" accept="image/*" multiple />
+        <button class="secondary-wide" id="cameraImageBtn" type="button">Open Camera</button>
+        <input id="vehicleCamera" type="file" accept="image/*" capture="environment" />
+        <div class="image-preview-grid" id="imagePreviewGrid"></div>
+        <div class="voice-status" id="imageStatus">No images selected.</div>
+      </section>
+
       <section class="post-form">
         <label>Make / Company<input id="vehicleMake" placeholder="Toyota" /></label>
         <label>Model<input id="vehicleModel" placeholder="Hiace" /></label>
