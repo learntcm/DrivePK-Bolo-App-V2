@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DrivePK Bolo V2</title>
   <style>
-    :root{--red:#ef1d1d;--black:#050505;--bg:#e7e7e7;--muted:#666}
+    :root{--red:#ef1d1d;--black:#050505;--bg:#e7e7e7;--muted:#666;--blue:#2563eb}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:#111}
     .app{max-width:430px;margin:0 auto;min-height:100vh;background:#f4f4f4}
@@ -37,7 +37,9 @@
     .meta{font-size:12px;color:#555;line-height:1.45}
     .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0 6px}
     .badge{display:inline-block;font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;background:#111;color:#fff}
-    .badge.red{background:var(--red)}.badge.green{background:#0a7a2f}
+    .badge.red{background:var(--red)}
+    .badge.blue{background:var(--blue)}
+    .badge.green{background:#0a7a2f}
     .seller-box{background:#f7f7f7;border:1px solid #e2e2e2;border-radius:10px;padding:7px;margin-top:7px;font-size:12px;color:#333;line-height:1.45}
     .local-actions{display:flex;gap:6px;margin-top:8px}.local-actions button{height:34px;font-size:12px}.available-btn{background:#0a7a2f}.sold-btn{background:#b00020}
     .page-head{display:flex;align-items:center;gap:10px;background:#000;color:#fff;border-radius:12px;padding:8px 10px;margin-bottom:10px}
@@ -60,6 +62,18 @@
     .detail-grid div{background:#f4f4f4;border-radius:10px;padding:8px;font-size:12px}
     .detail-grid strong{display:block;color:#111;margin-bottom:3px}
     .description{font-size:13px;color:#444;line-height:1.5;white-space:pre-wrap}
+  
+    .expiry-lock{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:14px;z-index:2000}
+    .expiry-lock.active{display:flex}
+    .expiry-card{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 16px 50px rgba(0,0,0,.35)}
+    .expiry-card h2{margin:0 0 8px;color:var(--red);font-size:22px}
+    .expiry-card p{margin:0 0 12px;color:#444;line-height:1.45}
+    .expiry-vehicle{background:#f5f5f5;border-radius:12px;padding:10px;margin:10px 0;font-size:14px;line-height:1.5}
+    .expiry-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .expiry-actions button{height:50px}
+    .expiry-sold{background:#b00020}
+    .expiry-available{background:#0a7a2f}
+
   </style>
 </head>
 <body>
@@ -113,6 +127,20 @@
 
   <div class="modal-back" id="detailModal"><div class="modal"><div class="modal-head"><h3 id="detailTitle">Vehicle Detail</h3><button id="closeDetail">×</button></div><div id="detailBody"></div></div></div>
 
+
+  <div class="expiry-lock" id="expiryLock">
+    <div class="expiry-card">
+      <h2>Vehicle Status Required</h2>
+      <p>Your posted vehicle has reached the 10-minute expiry check. Please confirm its status before using the app.</p>
+      <div class="expiry-vehicle" id="expiryVehicleInfo"></div>
+      <div class="expiry-actions">
+        <button class="expiry-sold" id="expirySoldBtn" type="button">Sold</button>
+        <button class="expiry-available" id="expiryAvailableBtn" type="button">Still Available</button>
+      </div>
+    </div>
+  </div>
+
+
   <script>
     window.DRIVEPK_BOLO_CONFIG = {
       CARS_API_URL: 'https://meilibeauty.co.uk/cars.php',
@@ -139,11 +167,11 @@
       cameraBtn: $('#cameraBtn'), imagePreview: $('#imagePreview'), imageStatus: $('#imageStatus'), vehicleMake: $('#vehicleMake'), vehicleModel: $('#vehicleModel'),
       vehicleYear: $('#vehicleYear'), vehiclePrice: $('#vehiclePrice'), vehicleCity: $('#vehicleCity'), vehicleColor: $('#vehicleColor'),
       vehicleRegisteredIn: $('#vehicleRegisteredIn'), vehicleMileage: $('#vehicleMileage'), vehicleExtraInfo: $('#vehicleExtraInfo'),
-      detailModal: $('#detailModal'), detailTitle: $('#detailTitle'), detailBody: $('#detailBody'), closeDetail: $('#closeDetail')
+      detailModal: $('#detailModal'), detailTitle: $('#detailTitle'), detailBody: $('#detailBody'), closeDetail: $('#closeDetail'), expiryLock: $('#expiryLock'), expiryVehicleInfo: $('#expiryVehicleInfo'), expirySoldBtn: $('#expirySoldBtn'), expiryAvailableBtn: $('#expiryAvailableBtn')
     };
 
     let mediaRecorder=null, mediaStream=null, audioChunks=[], selectedImages=[], loadedCars=[];
-    let currentPage=1, hasNext=true, isLoading=false, currentFilters={}, totalRemote=0;
+    let currentPage=1, hasNext=true, isLoading=false, currentFilters={}, totalRemote=0, currentDueVehicle=null;
 
     const storageKey=()=>CONFIG.STORAGE_KEYS?.VEHICLES||'drivepk_bolo_v2_vehicles';
     const esc=v=>String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -155,7 +183,14 @@
     const sellerName=c=>c.isDealer?(c.dealerId?.businessName||'Dealer'):'Private Seller';
     const sellerPhone=c=>c.isDealer?(c.dealerId?.phone||'Phone hidden'):(c.phone||c.sellerPhone||'Phone not public in API');
     const sellerAddress=c=>c.isDealer?(c.dealerId?.address||areaOf(c)||cityOf(c)):(areaOf(c)||cityOf(c));
-    const badgeHtml=c=> c.isDealer ? '<span class="badge red">DEALER</span>' : '<span class="badge green">PRIVATE</span>';
+    const dealerBadge=c=> c.isDealer ? '<span class="badge red">DEALER</span>' : '<span class="badge green">PRIVATE</span>';
+
+    function adBadge(c) {
+      const type = String(c.adType || '').toLowerCase().trim();
+      if (type === 'featured-pro') return '<span class="badge red">Featured Pro</span>';
+      if (type === 'featured') return '<span class="badge blue">Featured</span>';
+      return '';
+    }
 
     function money(v){const n=Number(v||0);if(!n)return'Price on Call';if(n>=100000){const l=n/100000;return`${Number.isInteger(l)?l:l.toFixed(1)} Lakh PKR`;}return`PKR ${n.toLocaleString('en-PK')}`;}
     function showPage(n){els.homePage.classList.toggle('active',n==='home');els.postPage.classList.toggle('active',n==='post');if(n==='home')renderCurrent();}
@@ -182,7 +217,7 @@
       return `<article class="car-card" data-index="${index}">
         <img src="${esc(imageOf(c))}" alt="${esc(titleOf(c))}">
         <div>
-          <div class="badge-row">${badgeHtml(c)} ${c.adType?`<span class="badge">${esc(c.adType)}</span>`:''}</div>
+          <div class="badge-row">${dealerBadge(c)} ${adBadge(c)}</div>
           <h3>${esc(titleOf(c))}</h3>
           <div class="price">${esc(money(c.price))}</div>
           <div class="meta">City: ${esc(cityOf(c))}</div>
@@ -203,6 +238,48 @@
       return { cars:Array.isArray(j.data)?j.data:[], pagination:j.pagination||{} };
     }
 
+
+    function getDueVehicles(){
+      const now=Date.now();
+      return getLocal().filter(c=>c.status==='available'&&c.active!==false&&Number(c.nextCheckAt||0)<=now);
+    }
+
+    function showExpiryLock(){
+      const due=getDueVehicles();
+      if(!due.length){
+        currentDueVehicle=null;
+        els.expiryLock.classList.remove('active');
+        return;
+      }
+
+      currentDueVehicle=due[0];
+      els.expiryVehicleInfo.innerHTML=`
+        <strong>${esc(titleOf(currentDueVehicle))}</strong><br>
+        Price: ${esc(money(currentDueVehicle.price))}<br>
+        City: ${esc(cityOf(currentDueVehicle))}<br>
+        Posted status: Available<br>
+        Please confirm Sold or Still Available.
+      `;
+      els.expiryLock.classList.add('active');
+    }
+
+    function updateDueVehicle(status){
+      if(!currentDueVehicle) return;
+      const posts=JSON.parse(localStorage.getItem(storageKey())||'[]');
+      const updated=posts.map(c=>{
+        if(c.id!==currentDueVehicle.id) return c;
+        if(status==='sold'){
+          return {...c,status:'sold',active:false,soldAt:new Date().toISOString()};
+        }
+        return {...c,status:'available',active:true,nextCheckAt:Date.now()+Number(CONFIG.EXPIRY_MINUTES||10)*60*1000,lastConfirmedAt:new Date().toISOString()};
+      });
+      saveLocal(updated);
+      currentDueVehicle=null;
+      els.expiryLock.classList.remove('active');
+      renderCurrent();
+      showExpiryLock();
+    }
+
     function renderCurrent(){
       const local=getLocal();
       const all=[...local,...loadedCars];
@@ -210,6 +287,7 @@
       els.resultInfo.textContent=totalRemote ? `Showing ${loadedCars.length} of ${totalRemote} matching DrivePK cars` : '';
       updateStats(local);
       els.loadMoreStatus.innerHTML = isLoading ? '<span class="spinner"></span>Loading more cars...' : (hasNext ? 'Scroll for more cars' : (loadedCars.length ? 'All matching cars loaded.' : ''));
+      showExpiryLock();
     }
 
     async function startNewSearch(filters={}){
@@ -239,13 +317,13 @@
     function updateStats(local=getLocal()){
       els.totalCount.textContent=local.length;
       els.activeCount.textContent=local.filter(c=>c.status!=='sold').length;
-      els.dueCount.textContent=local.filter(c=>c.status==='available'&&c.nextCheckAt&&c.nextCheckAt<=Date.now()).length;
+      els.dueCount.textContent=getDueVehicles().length;
     }
 
     function openDetail(car){
       els.detailTitle.textContent=titleOf(car);
       els.detailBody.innerHTML=`<img src="${esc(imageOf(car))}" alt="${esc(titleOf(car))}">
-        <div class="badge-row">${badgeHtml(car)} ${car.adType?`<span class="badge">${esc(car.adType)}</span>`:''}</div>
+        <div class="badge-row">${dealerBadge(car)} ${adBadge(car)}</div>
         <div class="price">${esc(money(car.price))}</div>
         <div class="detail-grid">
           <div><strong>City</strong>${esc(cityOf(car))}</div><div><strong>Area</strong>${esc(areaOf(car)||'-')}</div>
@@ -293,6 +371,8 @@
       els.homeSearchInput.addEventListener('keydown',e=>{if(e.key==='Enter')els.searchBtn.click();});
       els.vehicleImages.onchange=e=>addImages(e.target.files); els.vehicleCamera.onchange=e=>addImages(e.target.files);
       els.closeDetail.onclick=()=>els.detailModal.classList.remove('active'); els.detailModal.onclick=e=>{if(e.target===els.detailModal)els.detailModal.classList.remove('active');};
+      els.expirySoldBtn.onclick=()=>updateDueVehicle('sold');
+      els.expiryAvailableBtn.onclick=()=>updateDueVehicle('available');
 
       document.addEventListener('click',e=>{
         const sold=e.target.closest('[data-sold]'),avail=e.target.closest('[data-available]');
@@ -303,6 +383,8 @@
 
       const observer=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)loadNextPage();},{rootMargin:'800px'});
       observer.observe(els.scrollSentinel);
+      setInterval(showExpiryLock, 5000);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)showExpiryLock();});
     }
 
     bind();
