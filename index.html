@@ -5,96 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DrivePK Bolo V2</title>
   <style>
-    :root{--red:#ef1d1d;--black:#050505;--bg:#e7e7e7;--muted:#666;--blue:#2563eb}
+    :root{--red:#ef1d1d;--black:#050505;--bg:#e7e7e7;--muted:#666;--blue:#2563eb;--green:#0a7a2f}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:#111}
     .app{max-width:430px;margin:0 auto;min-height:100vh;background:#f4f4f4}
-    .top{background:#000;color:#fff;padding:12px 14px}
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{width:40px;height:40px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-weight:900;font-size:22px}
-    .brand small{display:block;color:#ddd;margin-top:2px}
+    .top{background:#000;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+    .brand{display:flex;gap:10px;align-items:center}.logo{width:40px;height:40px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-weight:900;font-size:22px}
+    .brand small{display:block;color:#ddd;margin-top:2px}.profile-btn{background:#222;color:#fff;border-radius:10px;padding:8px 10px;height:auto;font-size:12px}
     .page{display:none;padding:12px}.page.active{display:block}
     .hero{height:160px;background:#000;border-radius:18px;color:#fff;display:grid;place-items:center;text-align:center;margin:10px 0 14px}
-    .hero h1{font-size:34px;margin:0}.hero p{color:var(--red);font-weight:800;margin:6px 0 0}
-    .small-hero{height:115px}
-    .ad-hero,.voice-card,.image-card,.form{background:#fff;border-radius:14px;padding:12px;margin:12px 0;box-shadow:0 1px 5px rgba(0,0,0,.08)}
+    .hero h1{font-size:34px;margin:0}.hero p{color:var(--red);font-weight:800;margin:6px 0 0}.small-hero{height:115px}
+    .ad-hero,.voice-card,.image-card,.form,.profile-card{background:#fff;border-radius:14px;padding:12px;margin:12px 0;box-shadow:0 1px 5px rgba(0,0,0,.08)}
     .ad-hero strong{display:block;color:var(--red);font-size:18px;margin-bottom:4px}.ad-hero span{color:#555;line-height:1.45}
     .search-row{display:grid;grid-template-columns:1fr 96px;gap:8px}
-    input,textarea,button{font:inherit}
-    input,textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:13px 14px;background:#fff;outline:none}
+    input,textarea,select,button{font:inherit}
+    input,textarea,select{width:100%;border:1px solid #ddd;border-radius:12px;padding:13px 14px;background:#fff;outline:none}
     textarea{min-height:120px;resize:vertical}
     button{border:0;border-radius:12px;height:48px;font-weight:800;color:#fff}
-    .red-btn{background:var(--red);width:100%;margin-top:8px}
-    .dark-btn,#searchBtn{background:#111;width:100%;margin-top:8px}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-    .stats div{background:#111;color:#fff;border-radius:10px;text-align:center;padding:10px}
-    .stats strong{display:block;font-size:20px}.stats span{font-size:11px;color:#ddd}
-    .section-title{font-size:18px;margin:16px 0 10px}.result-info{font-size:12px;color:#666;margin:-4px 0 10px}
-    .list{display:grid;gap:10px}
-    .car-card{background:#fff;border-radius:14px;padding:10px;display:grid;grid-template-columns:112px 1fr;gap:10px;box-shadow:0 1px 5px rgba(0,0,0,.08);cursor:pointer}
-    .car-card img{width:112px;height:96px;object-fit:cover;border-radius:10px;background:#222}
-    .car-card h3{margin:0 0 5px;font-size:15px}.price{color:var(--red);font-weight:900;margin-bottom:4px}
-    .meta{font-size:12px;color:#555;line-height:1.45}
-    .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0 6px}
-    .badge{display:inline-block;font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;background:#111;color:#fff}
-    .badge.red{background:var(--red)}
-    .badge.blue{background:var(--blue)}
-    .badge.green{background:#0a7a2f}
+    .red-btn{background:var(--red);width:100%;margin-top:8px}.dark-btn,#searchBtn{background:#111;width:100%;margin-top:8px}.green-btn{background:var(--green);width:100%;margin-top:8px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stats div{background:#111;color:#fff;border-radius:10px;text-align:center;padding:10px}
+    .stats strong{display:block;font-size:20px}.stats span{font-size:11px;color:#ddd}.section-title{font-size:18px;margin:16px 0 10px}.result-info{font-size:12px;color:#666;margin:-4px 0 10px}
+    .list{display:grid;gap:10px}.car-card{background:#fff;border-radius:14px;padding:10px;display:grid;grid-template-columns:112px 1fr;gap:10px;box-shadow:0 1px 5px rgba(0,0,0,.08);cursor:pointer}
+    .car-card img{width:112px;height:96px;object-fit:cover;border-radius:10px;background:#222}.car-card h3{margin:0 0 5px;font-size:15px}.price{color:var(--red);font-weight:900;margin-bottom:4px}
+    .meta{font-size:12px;color:#555;line-height:1.45}.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0 6px}.badge{display:inline-block;font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;background:#111;color:#fff}.badge.red{background:var(--red)}.badge.blue{background:var(--blue)}.badge.green{background:var(--green)}
     .seller-box{background:#f7f7f7;border:1px solid #e2e2e2;border-radius:10px;padding:7px;margin-top:7px;font-size:12px;color:#333;line-height:1.45}
-    .local-actions{display:flex;gap:6px;margin-top:8px}.local-actions button{height:34px;font-size:12px}.available-btn{background:#0a7a2f}.sold-btn{background:#b00020}
-    .page-head{display:flex;align-items:center;gap:10px;background:#000;color:#fff;border-radius:12px;padding:8px 10px;margin-bottom:10px}
-    .page-head button{width:auto;height:38px;background:var(--red);padding:0 12px}
-    .voice-card p{font-size:13px;color:#555;white-space:pre-wrap}.image-card p,.image-card small{color:#666;font-size:13px}
-    #vehicleCamera{display:none}.image-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
-    .thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#ddd}.thumb img{width:100%;height:100%;object-fit:cover}
-    .thumb button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:var(--red);font-size:12px}
-    .form{display:grid;gap:10px}.form label{font-size:12px;font-weight:800;color:#333}.form input,.form textarea{margin-top:6px}
-    .load-more{padding:14px;text-align:center;color:#666;font-size:13px}
-    .spinner{display:inline-block;width:18px;height:18px;border:3px solid #ddd;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:12px;z-index:999}
-    .modal-back.active{display:flex}
-    .modal{width:100%;max-width:420px;max-height:92vh;overflow:auto;background:#fff;border-radius:16px;padding:12px}
-    .modal-head{display:flex;align-items:center;gap:8px;background:#000;color:#fff;border-radius:12px;padding:8px;margin-bottom:10px}
-    .modal-head h3{margin:0;flex:1;font-size:16px}.modal-head button{width:40px;height:36px;background:var(--red)}
-    .modal img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;background:#222}
-    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-    .detail-grid div{background:#f4f4f4;border-radius:10px;padding:8px;font-size:12px}
-    .detail-grid strong{display:block;color:#111;margin-bottom:3px}
-    .description{font-size:13px;color:#444;line-height:1.5;white-space:pre-wrap}
-  
-    .expiry-lock{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:14px;z-index:2000}
-    .expiry-lock.active{display:flex}
-    .expiry-card{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 16px 50px rgba(0,0,0,.35)}
-    .expiry-card h2{margin:0 0 8px;color:var(--red);font-size:22px}
-    .expiry-card p{margin:0 0 12px;color:#444;line-height:1.45}
-    .expiry-vehicle{background:#f5f5f5;border-radius:12px;padding:10px;margin:10px 0;font-size:14px;line-height:1.5}
-    .expiry-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-    .expiry-actions button{height:50px}
-    .expiry-sold{background:#b00020}
-    .expiry-available{background:#0a7a2f}
-
+    .page-head{display:flex;align-items:center;gap:10px;background:#000;color:#fff;border-radius:12px;padding:8px 10px;margin-bottom:10px}.page-head button{width:auto;height:38px;background:var(--red);padding:0 12px}
+    .voice-card p{font-size:13px;color:#555;white-space:pre-wrap}.image-card p,.image-card small{color:#666;font-size:13px}#vehicleCamera{display:none}
+    .image-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#ddd}.thumb img{width:100%;height:100%;object-fit:cover}.thumb button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:var(--red);font-size:12px}
+    .form{display:grid;gap:10px}.form label,.profile-card label{font-size:12px;font-weight:800;color:#333}.form input,.form textarea,.form select,.profile-card input{margin-top:6px}
+    .load-more{padding:14px;text-align:center;color:#666;font-size:13px}.spinner{display:inline-block;width:18px;height:18px;border:3px solid #ddd;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
+    .modal-back,.expiry-lock{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:12px;z-index:999}.expiry-lock{background:rgba(0,0,0,.82);z-index:2000}.modal-back.active,.expiry-lock.active{display:flex}
+    .modal,.expiry-card{width:100%;max-width:420px;max-height:92vh;overflow:auto;background:#fff;border-radius:16px;padding:12px}.expiry-card{padding:16px}
+    .modal-head{display:flex;align-items:center;gap:8px;background:#000;color:#fff;border-radius:12px;padding:8px;margin-bottom:10px}.modal-head h3{margin:0;flex:1;font-size:16px}.modal-head button{width:40px;height:36px;background:var(--red)}
+    .modal img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;background:#222}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.detail-grid div{background:#f4f4f4;border-radius:10px;padding:8px;font-size:12px}.detail-grid strong{display:block;color:#111;margin-bottom:3px}.description{font-size:13px;color:#444;line-height:1.5;white-space:pre-wrap}
+    .detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.delete-btn{background:#b00020}.expiry-card h2{margin:0 0 8px;color:var(--red);font-size:22px}.expiry-card p{margin:0 0 12px;color:#444;line-height:1.45}.expiry-vehicle{background:#f5f5f5;border-radius:12px;padding:10px;margin:10px 0;font-size:14px;line-height:1.5}.expiry-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.expiry-sold{background:#b00020}.expiry-available{background:var(--green)}
   </style>
 </head>
 <body>
   <main class="app">
-    <header class="top"><div class="brand"><div class="logo">D</div><div><strong>DrivePK</strong><small>Bolo aur gaari dhoondo</small></div></div></header>
+    <header class="top"><div class="brand"><div class="logo">D</div><div><strong>DrivePK</strong><small>Bolo aur gaari dhoondo</small></div></div><button class="profile-btn" id="profileTopBtn">Profile</button></header>
 
     <section id="homePage" class="page active">
       <div class="hero"><h1>DrivePK</h1><p>Voice Search</p></div>
-      <div class="search-row"><input id="homeSearchInput" placeholder="Jaise: Honda Lahore" /><button id="searchBtn">Search</button></div>
+      <div class="search-row"><input id="homeSearchInput" placeholder="Jaise: Honda Accord Lahore" /><button id="searchBtn">Search</button></div>
       <button class="red-btn" id="postVehicleBtn">POST VEHICLE</button>
       <button class="dark-btn" id="voiceSearchBtn">🎙 Voice Search</button>
-      <div class="stats">
-        <div><strong id="totalCount">0</strong><span>Total</span></div>
-        <div><strong id="activeCount">0</strong><span>Active</span></div>
-        <div><strong id="dueCount">0</strong><span>Need Update</span></div>
+      <div class="stats"><div><strong id="totalCount">0</strong><span>Total</span></div><div><strong id="activeCount">0</strong><span>Active</span></div><div><strong id="dueCount">0</strong><span>Need Update</span></div></div>
+      <h2 class="section-title">Featured Vehicles</h2><div id="resultInfo" class="result-info"></div><div id="results" class="list">Loading cars...</div><div id="loadMoreStatus" class="load-more"></div><div id="scrollSentinel"></div>
+    </section>
+
+    <section id="profilePage" class="page">
+      <div class="page-head"><button id="profileBackBtn">← Back</button><strong>Signup / Profile</strong></div>
+      <div class="profile-card">
+        <label>Full Name<input id="profileName" placeholder="Dr Sarwar Khan"></label>
+        <label>Phone Number<input id="profilePhone" placeholder="03123456789" inputmode="tel"></label>
+        <label>WhatsApp Number<input id="profileWhatsapp" placeholder="Optional" inputmode="tel"></label>
+        <label>City<input id="profileCity" placeholder="Rawalpindi"></label>
+        <label>Email<input id="profileEmail" placeholder="Optional"></label>
+        <button class="red-btn" id="saveProfileBtn">Save Profile</button>
+        <button class="dark-btn" id="clearProfileBtn">Clear Profile</button>
+        <p id="profileStatus" class="meta"></p>
       </div>
-      <h2 class="section-title">Featured Vehicles</h2>
-      <div id="resultInfo" class="result-info"></div>
-      <div id="results" class="list">Loading cars...</div>
-      <div id="loadMoreStatus" class="load-more"></div>
-      <div id="scrollSentinel"></div>
     </section>
 
     <section id="postPage" class="page">
@@ -102,293 +73,70 @@
       <div class="hero small-hero"><h1>Post Vehicle</h1><p>AI will fill the form</p></div>
       <div class="ad-hero"><strong>DrivePK AI Posting</strong><span>Record voice, review details, add photos, then save demo post.</span></div>
       <div class="voice-card"><button class="dark-btn" id="playGuideBtn">Play Guide</button><button class="red-btn" id="recordBtn">🎙 Start Recording</button><p id="postStatus">Ready to record</p></div>
-      <div class="image-card">
-        <strong>Vehicle Images</strong><p>Add from gallery or camera. Maximum 20 images.</p>
-        <input id="vehicleImages" type="file" accept="image/*" multiple />
-        <button class="dark-btn" id="cameraBtn">Open Camera</button>
-        <input id="vehicleCamera" type="file" accept="image/*" capture="environment" />
-        <div id="imagePreview" class="image-grid"></div><small id="imageStatus">No images selected.</small>
-      </div>
+      <div class="image-card"><strong>Vehicle Images</strong><p>Add from gallery or camera. Maximum 20 images.</p><input id="vehicleImages" type="file" accept="image/*" multiple /><button class="dark-btn" id="cameraBtn">Open Camera</button><input id="vehicleCamera" type="file" accept="image/*" capture="environment" /><div id="imagePreview" class="image-grid"></div><small id="imageStatus">No images selected.</small></div>
       <form id="vehicleForm" class="form">
-        <label>Make / Company<input id="vehicleMake" placeholder="Jaise Toyota" /></label>
-        <label>Model<input id="vehicleModel" placeholder="Jaise Corolla" /></label>
-        <label>Model Year<input id="vehicleYear" inputmode="numeric" placeholder="Jaise 2017" /></label>
-        <label>Price PKR<input id="vehiclePrice" inputmode="numeric" placeholder="Jaise 2000000" /></label>
-        <label>City<input id="vehicleCity" placeholder="Jaise Lahore" /></label>
+        <label>Make / Company<input id="vehicleMake" placeholder="Jaise Toyota" required /></label>
+        <label>Model<input id="vehicleModel" placeholder="Jaise Corolla" required /></label>
+        <label>Model Year<input id="vehicleYear" inputmode="numeric" placeholder="Jaise 2017" required /></label>
+        <label>Price PKR<input id="vehiclePrice" inputmode="numeric" placeholder="Jaise 2000000" required /></label>
+        <label>City<input id="vehicleCity" placeholder="Jaise Lahore" required /></label>
         <label>Color<input id="vehicleColor" placeholder="Jaise White" /></label>
         <label>Registered In<input id="vehicleRegisteredIn" placeholder="Jaise Islamabad" /></label>
         <label>Mileage KM<input id="vehicleMileage" inputmode="numeric" placeholder="Jaise 90000" /></label>
+        <label>Transmission<select id="vehicleTransmission" required><option value="">Select transmission</option><option>Automatic</option><option>Manual</option></select></label>
+        <label>Fuel Type<select id="vehicleFuelType" required><option value="">Select fuel type</option><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option><option>CNG</option><option>LPG</option></select></label>
         <label>Additional Details<textarea id="vehicleExtraInfo" placeholder="Full transcript and extra details will appear here."></textarea></label>
-        <button type="button" class="red-btn" id="saveBtn">Post Vehicle</button>
-        <button type="button" class="dark-btn" id="resetBtn">Reset Form</button>
+        <button type="button" class="red-btn" id="saveBtn">Post Vehicle</button><button type="button" class="dark-btn" id="resetBtn">Reset Form</button>
       </form>
     </section>
   </main>
 
   <div class="modal-back" id="detailModal"><div class="modal"><div class="modal-head"><h3 id="detailTitle">Vehicle Detail</h3><button id="closeDetail">×</button></div><div id="detailBody"></div></div></div>
-
-
-  <div class="expiry-lock" id="expiryLock">
-    <div class="expiry-card">
-      <h2>Vehicle Status Required</h2>
-      <p>Your posted vehicle has reached the 10-minute expiry check. Please confirm its status before using the app.</p>
-      <div class="expiry-vehicle" id="expiryVehicleInfo"></div>
-      <div class="expiry-actions">
-        <button class="expiry-sold" id="expirySoldBtn" type="button">Sold</button>
-        <button class="expiry-available" id="expiryAvailableBtn" type="button">Still Available</button>
-      </div>
-    </div>
-  </div>
-
-
-  <script>
-    window.DRIVEPK_BOLO_CONFIG = {
-      CARS_API_URL: 'https://meilibeauty.co.uk/cars.php',
-      TRANSCRIBE_URL: 'https://meilibeauty.co.uk/transcribe.php',
-      VOICE_URL: 'https://meilibeauty.co.uk/voice.php',
-      EXPIRY_MINUTES: 10,
-      MAX_RECORDING_SECONDS: 60,
-      PAGE_LIMIT: 20,
-      STORAGE_KEYS: { PROFILE: 'drivepk_bolo_v2_profile', VEHICLES: 'drivepk_bolo_v2_vehicles' }
-    };
-  </script>
+  <div class="expiry-lock" id="expiryLock"><div class="expiry-card"><h2>Vehicle Status Required</h2><p>Your posted vehicle has reached the 10-minute expiry check. Please confirm its status before using the app.</p><div class="expiry-vehicle" id="expiryVehicleInfo"></div><div class="expiry-actions"><button class="expiry-sold" id="expirySoldBtn" type="button">Sold</button><button class="expiry-available" id="expiryAvailableBtn" type="button">Still Available</button></div></div></div>
 
   <script>
   (() => {
     'use strict';
-    const CONFIG = window.DRIVEPK_BOLO_CONFIG || {};
-    const $ = q => document.querySelector(q);
-    const els = {
-      homePage: $('#homePage'), postPage: $('#postPage'), postVehicleBtn: $('#postVehicleBtn'), backBtn: $('#backBtn'),
-      homeSearchInput: $('#homeSearchInput'), searchBtn: $('#searchBtn'), voiceSearchBtn: $('#voiceSearchBtn'), results: $('#results'),
-      resultInfo: $('#resultInfo'), loadMoreStatus: $('#loadMoreStatus'), scrollSentinel: $('#scrollSentinel'),
-      totalCount: $('#totalCount'), activeCount: $('#activeCount'), dueCount: $('#dueCount'), recordBtn: $('#recordBtn'),
-      postStatus: $('#postStatus'), resetBtn: $('#resetBtn'), saveBtn: $('#saveBtn'), vehicleImages: $('#vehicleImages'), vehicleCamera: $('#vehicleCamera'),
-      cameraBtn: $('#cameraBtn'), imagePreview: $('#imagePreview'), imageStatus: $('#imageStatus'), vehicleMake: $('#vehicleMake'), vehicleModel: $('#vehicleModel'),
-      vehicleYear: $('#vehicleYear'), vehiclePrice: $('#vehiclePrice'), vehicleCity: $('#vehicleCity'), vehicleColor: $('#vehicleColor'),
-      vehicleRegisteredIn: $('#vehicleRegisteredIn'), vehicleMileage: $('#vehicleMileage'), vehicleExtraInfo: $('#vehicleExtraInfo'),
-      detailModal: $('#detailModal'), detailTitle: $('#detailTitle'), detailBody: $('#detailBody'), closeDetail: $('#closeDetail'), expiryLock: $('#expiryLock'), expiryVehicleInfo: $('#expiryVehicleInfo'), expirySoldBtn: $('#expirySoldBtn'), expiryAvailableBtn: $('#expiryAvailableBtn')
-    };
-
-    let mediaRecorder=null, mediaStream=null, audioChunks=[], selectedImages=[], loadedCars=[];
-    let currentPage=1, hasNext=true, isLoading=false, currentFilters={}, totalRemote=0, currentDueVehicle=null;
-
-    const storageKey=()=>CONFIG.STORAGE_KEYS?.VEHICLES||'drivepk_bolo_v2_vehicles';
+    const CONFIG={CARS_API_URL:'https://meilibeauty.co.uk/cars.php',TRANSCRIBE_URL:'https://meilibeauty.co.uk/transcribe.php',EXPIRY_MINUTES:10,MAX_RECORDING_SECONDS:60,PAGE_LIMIT:20,STORAGE_KEYS:{PROFILE:'drivepk_bolo_v2_profile',VEHICLES:'drivepk_bolo_v2_vehicles'}};
+    const $=q=>document.querySelector(q);
+    const els={homePage:$('#homePage'),postPage:$('#postPage'),profilePage:$('#profilePage'),postVehicleBtn:$('#postVehicleBtn'),backBtn:$('#backBtn'),profileTopBtn:$('#profileTopBtn'),profileBackBtn:$('#profileBackBtn'),homeSearchInput:$('#homeSearchInput'),searchBtn:$('#searchBtn'),voiceSearchBtn:$('#voiceSearchBtn'),results:$('#results'),resultInfo:$('#resultInfo'),loadMoreStatus:$('#loadMoreStatus'),scrollSentinel:$('#scrollSentinel'),totalCount:$('#totalCount'),activeCount:$('#activeCount'),dueCount:$('#dueCount'),recordBtn:$('#recordBtn'),postStatus:$('#postStatus'),resetBtn:$('#resetBtn'),saveBtn:$('#saveBtn'),vehicleImages:$('#vehicleImages'),vehicleCamera:$('#vehicleCamera'),cameraBtn:$('#cameraBtn'),imagePreview:$('#imagePreview'),imageStatus:$('#imageStatus'),vehicleMake:$('#vehicleMake'),vehicleModel:$('#vehicleModel'),vehicleYear:$('#vehicleYear'),vehiclePrice:$('#vehiclePrice'),vehicleCity:$('#vehicleCity'),vehicleColor:$('#vehicleColor'),vehicleRegisteredIn:$('#vehicleRegisteredIn'),vehicleMileage:$('#vehicleMileage'),vehicleTransmission:$('#vehicleTransmission'),vehicleFuelType:$('#vehicleFuelType'),vehicleExtraInfo:$('#vehicleExtraInfo'),detailModal:$('#detailModal'),detailTitle:$('#detailTitle'),detailBody:$('#detailBody'),closeDetail:$('#closeDetail'),expiryLock:$('#expiryLock'),expiryVehicleInfo:$('#expiryVehicleInfo'),expirySoldBtn:$('#expirySoldBtn'),expiryAvailableBtn:$('#expiryAvailableBtn'),profileName:$('#profileName'),profilePhone:$('#profilePhone'),profileWhatsapp:$('#profileWhatsapp'),profileCity:$('#profileCity'),profileEmail:$('#profileEmail'),saveProfileBtn:$('#saveProfileBtn'),clearProfileBtn:$('#clearProfileBtn'),profileStatus:$('#profileStatus')};
+    let mediaRecorder=null,mediaStream=null,audioChunks=[],selectedImages=[],loadedCars=[],currentPage=1,hasNext=true,isLoading=false,currentFilters={},totalRemote=0,currentDueVehicle=null;
+    const storageKey=()=>CONFIG.STORAGE_KEYS.VEHICLES,profileKey=()=>CONFIG.STORAGE_KEYS.PROFILE;
     const esc=v=>String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     const valueText=v=>!v?'':typeof v==='string'?v:(typeof v==='object'?(v.name||v.title||v.businessName||v._id||''):String(v));
     const titleOf=c=>c.title||[valueText(c.brand),valueText(c.carModel),c.year].filter(Boolean).join(' ')||'Vehicle';
-    const cityOf=c=>c?.location?.city||c?.currentLocation?.city||c.city||'-';
-    const areaOf=c=>c?.location?.area||c?.currentLocation?.area||'';
+    const cityOf=c=>c?.location?.city||c?.currentLocation?.city||c.city||'-',areaOf=c=>c?.location?.area||c?.currentLocation?.area||'';
     const imageOf=c=>Array.isArray(c.images)&&c.images[0]?c.images[0]:'https://dummyimage.com/300x220/111/fff&text=DrivePK';
-    const sellerName=c=>c.isDealer?(c.dealerId?.businessName||'Dealer'):'Private Seller';
-    const sellerPhone=c=>c.isDealer?(c.dealerId?.phone||'Phone hidden'):(c.phone||c.sellerPhone||'Phone not public in API');
-    const sellerAddress=c=>c.isDealer?(c.dealerId?.address||areaOf(c)||cityOf(c)):(areaOf(c)||cityOf(c));
-    const dealerBadge=c=> c.isDealer ? '<span class="badge red">DEALER</span>' : '<span class="badge green">PRIVATE</span>';
-
-    function adBadge(c) {
-      const type = String(c.adType || '').toLowerCase().trim();
-      if (type === 'featured-pro') return '<span class="badge red">Featured Pro</span>';
-      if (type === 'featured') return '<span class="badge blue">Featured</span>';
-      return '';
-    }
-
-    function money(v){const n=Number(v||0);if(!n)return'Price on Call';if(n>=100000){const l=n/100000;return`${Number.isInteger(l)?l:l.toFixed(1)} Lakh PKR`;}return`PKR ${n.toLocaleString('en-PK')}`;}
-    function showPage(n){els.homePage.classList.toggle('active',n==='home');els.postPage.classList.toggle('active',n==='post');if(n==='home')renderCurrent();}
-    function getLocal(){try{return JSON.parse(localStorage.getItem(storageKey())||'[]').reverse();}catch(e){return[];}}
-    function saveLocal(posts){localStorage.setItem(storageKey(),JSON.stringify(posts));}
-
-    function parseSearch(text){
-      const t=String(text||'').toLowerCase();
-      const filters={};
-      const brands=['toyota','honda','suzuki','kia','hyundai','mg','haval','chery','omoda','byd','ford','nissan','daihatsu','changan','proton','lexus'];
-      const cities=['lahore','rawalpindi','islamabad','karachi','peshawar','multan','faisalabad','quetta','sialkot','attock','khanewal'];
-      const brand=brands.find(b=>t.includes(b));
-      const city=cities.find(c=>t.includes(c));
-      if(brand) filters.brand=brand[0].toUpperCase()+brand.slice(1);
-      if(city) filters.city=city[0].toUpperCase()+city.slice(1);
-      const year=t.match(/\b(19[5-9]\d|20[0-3]\d)\b/);
-      if(year) filters.year=year[1];
-      if(!brand && !city && !year && text.trim()) filters.carName=text.trim();
-      return filters;
-    }
-
-    function card(c,index){
-      const local=c.id&&String(c.id).startsWith('local_');
-      return `<article class="car-card" data-index="${index}">
-        <img src="${esc(imageOf(c))}" alt="${esc(titleOf(c))}">
-        <div>
-          <div class="badge-row">${dealerBadge(c)} ${adBadge(c)}</div>
-          <h3>${esc(titleOf(c))}</h3>
-          <div class="price">${esc(money(c.price))}</div>
-          <div class="meta">City: ${esc(cityOf(c))}</div>
-          <div class="meta">Color: ${esc(c.color||'-')}</div>
-          <div class="meta">Mileage: ${c.mileage?Number(c.mileage).toLocaleString('en-PK')+' KM':'-'}</div>
-          <div class="seller-box"><strong>${esc(sellerName(c))}</strong><br>Phone: ${esc(sellerPhone(c))}<br>Area: ${esc(sellerAddress(c))}</div>
-          ${local?`<div class="local-actions"><button class="available-btn" data-available="${esc(c.id)}">Still Available</button><button class="sold-btn" data-sold="${esc(c.id)}">Sold</button></div>`:''}
-        </div>
-      </article>`;
-    }
-
-    async function fetchCars(filters={}, page=1){
-      const p=new URLSearchParams();
-      Object.entries({...filters,page,limit:CONFIG.PAGE_LIMIT||20}).forEach(([k,v])=>{if(v!==undefined&&v!==null&&String(v).trim())p.set(k,String(v).trim());});
-      const r=await fetch(`${CONFIG.CARS_API_URL}?${p.toString()}`,{headers:{Accept:'application/json'}});
-      if(!r.ok)throw new Error(`API error ${r.status}`);
-      const j=await r.json();
-      return { cars:Array.isArray(j.data)?j.data:[], pagination:j.pagination||{} };
-    }
-
-
-    function getDueVehicles(){
-      const now=Date.now();
-      return getLocal().filter(c=>c.status==='available'&&c.active!==false&&Number(c.nextCheckAt||0)<=now);
-    }
-
-    function showExpiryLock(){
-      const due=getDueVehicles();
-      if(!due.length){
-        currentDueVehicle=null;
-        els.expiryLock.classList.remove('active');
-        return;
-      }
-
-      currentDueVehicle=due[0];
-      els.expiryVehicleInfo.innerHTML=`
-        <strong>${esc(titleOf(currentDueVehicle))}</strong><br>
-        Price: ${esc(money(currentDueVehicle.price))}<br>
-        City: ${esc(cityOf(currentDueVehicle))}<br>
-        Posted status: Available<br>
-        Please confirm Sold or Still Available.
-      `;
-      els.expiryLock.classList.add('active');
-    }
-
-    function updateDueVehicle(status){
-      if(!currentDueVehicle) return;
-      const posts=JSON.parse(localStorage.getItem(storageKey())||'[]');
-      const updated=posts.map(c=>{
-        if(c.id!==currentDueVehicle.id) return c;
-        if(status==='sold'){
-          return {...c,status:'sold',active:false,soldAt:new Date().toISOString()};
-        }
-        return {...c,status:'available',active:true,nextCheckAt:Date.now()+Number(CONFIG.EXPIRY_MINUTES||10)*60*1000,lastConfirmedAt:new Date().toISOString()};
-      });
-      saveLocal(updated);
-      currentDueVehicle=null;
-      els.expiryLock.classList.remove('active');
-      renderCurrent();
-      showExpiryLock();
-    }
-
-    function renderCurrent(){
-      const local=getLocal();
-      const all=[...local,...loadedCars];
-      els.results.innerHTML=all.length?all.map(card).join(''):'No cars found.';
-      els.resultInfo.textContent=totalRemote ? `Showing ${loadedCars.length} of ${totalRemote} matching DrivePK cars` : '';
-      updateStats(local);
-      els.loadMoreStatus.innerHTML = isLoading ? '<span class="spinner"></span>Loading more cars...' : (hasNext ? 'Scroll for more cars' : (loadedCars.length ? 'All matching cars loaded.' : ''));
-      showExpiryLock();
-    }
-
-    async function startNewSearch(filters={}){
-      currentFilters=filters;
-      currentPage=1; hasNext=true; loadedCars=[]; totalRemote=0;
-      els.results.innerHTML='Loading cars...';
-      await loadNextPage();
-    }
-
-    async function loadNextPage(){
-      if(isLoading || !hasNext) return;
-      isLoading=true; renderCurrent();
-      try{
-        const {cars,pagination}=await fetchCars(currentFilters,currentPage);
-        loadedCars=[...loadedCars,...cars];
-        totalRemote=Number(pagination.total||totalRemote||cars.length);
-        hasNext=Boolean(pagination.hasNext);
-        currentPage+=1;
-      }catch(e){
-        els.loadMoreStatus.textContent=`Could not load more cars: ${e.message}`;
-        hasNext=false;
-      }finally{
-        isLoading=false; renderCurrent();
-      }
-    }
-
-    function updateStats(local=getLocal()){
-      els.totalCount.textContent=local.length;
-      els.activeCount.textContent=local.filter(c=>c.status!=='sold').length;
-      els.dueCount.textContent=getDueVehicles().length;
-    }
-
-    function openDetail(car){
-      els.detailTitle.textContent=titleOf(car);
-      els.detailBody.innerHTML=`<img src="${esc(imageOf(car))}" alt="${esc(titleOf(car))}">
-        <div class="badge-row">${dealerBadge(car)} ${adBadge(car)}</div>
-        <div class="price">${esc(money(car.price))}</div>
-        <div class="detail-grid">
-          <div><strong>City</strong>${esc(cityOf(car))}</div><div><strong>Area</strong>${esc(areaOf(car)||'-')}</div>
-          <div><strong>Year</strong>${esc(car.year||'-')}</div><div><strong>Mileage</strong>${car.mileage?Number(car.mileage).toLocaleString('en-PK')+' KM':'-'}</div>
-          <div><strong>Color</strong>${esc(car.color||'-')}</div><div><strong>Registered</strong>${esc(car.registrationState||'-')}</div>
-          <div><strong>Fuel</strong>${esc(car.fuelType||car.engineType||'-')}</div><div><strong>Transmission</strong>${esc(car.transmission||'-')}</div>
-        </div>
-        <div class="seller-box"><strong>Customer / Seller Details</strong><br>Type: ${car.isDealer?'Dealer':'Private Seller'}<br>Name: ${esc(sellerName(car))}<br>Phone: ${esc(sellerPhone(car))}<br>Address/Area: ${esc(sellerAddress(car))}</div>
-        <p class="description">${esc(car.description||'No description available.')}</p>`;
-      els.detailModal.classList.add('active');
-    }
-
-    function resetForm(){['vehicleMake','vehicleModel','vehicleYear','vehiclePrice','vehicleCity','vehicleColor','vehicleRegisteredIn','vehicleMileage','vehicleExtraInfo'].forEach(k=>els[k].value='');selectedImages=[];renderImages();els.postStatus.textContent='Ready to record';}
-    function renderImages(){if(!selectedImages.length){els.imagePreview.innerHTML='';els.imageStatus.textContent='No images selected.';return;}els.imagePreview.innerHTML=selectedImages.map((i,n)=>`<div class="thumb"><img src="${esc(i.dataUrl)}"><button type="button" data-remove-image="${n}">×</button></div>`).join('');els.imageStatus.textContent=`${selectedImages.length}/20 images selected.`;}
-    function addImages(files){const list=Array.from(files||[]).filter(f=>f.type.startsWith('image/')).slice(0,20-selectedImages.length);let done=0;if(!list.length)return renderImages();list.forEach(file=>{const reader=new FileReader();reader.onload=()=>{selectedImages.push({name:file.name,dataUrl:reader.result});done++;if(done===list.length)renderImages();};reader.readAsDataURL(file);});}
-    function savePost(){const posts=JSON.parse(localStorage.getItem(storageKey())||'[]');const now=Date.now();posts.push({id:`local_${now}`,title:`${els.vehicleMake.value} ${els.vehicleModel.value} ${els.vehicleYear.value}`.trim(),brand:els.vehicleMake.value,carModel:els.vehicleModel.value,year:els.vehicleYear.value,price:Number(els.vehiclePrice.value||0),city:els.vehicleCity.value,location:{city:els.vehicleCity.value,area:''},color:els.vehicleColor.value,registrationState:els.vehicleRegisteredIn.value,mileage:Number(els.vehicleMileage.value||0),description:els.vehicleExtraInfo.value,images:selectedImages.map(i=>i.dataUrl),status:'available',active:true,nextCheckAt:now+Number(CONFIG.EXPIRY_MINUTES||10)*60*1000,createdAt:new Date().toISOString(),isDealer:false});saveLocal(posts);resetForm();showPage('home');}
-
-    async function startRecording(){
-      if(!navigator.mediaDevices||!window.MediaRecorder){els.postStatus.textContent='This browser does not support recording.';return;}
-      if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return;}
-      audioChunks=[];
-      try{
-        mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});
-        mediaRecorder=new MediaRecorder(mediaStream);
-        mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)audioChunks.push(e.data);};
-        mediaRecorder.onstop=async()=>{
-          mediaStream.getTracks().forEach(t=>t.stop()); els.recordBtn.textContent='🎙 Start Recording'; els.postStatus.textContent='Processing voice...';
-          try{
-            const blob=new Blob(audioChunks,{type:mediaRecorder.mimeType||'audio/webm'});
-            const form=new FormData(); form.append('audio',blob,'drivepk-bolo.webm'); form.append('task','vehicle_post');
-            const res=await fetch(CONFIG.TRANSCRIBE_URL,{method:'POST',body:form}); const data=await res.json();
-            if(!res.ok)throw new Error(data.error||'Transcription failed');
-            const v=data.vehicle||{},t=data.roman_transcript||data.transcript||data.text||'';
-            els.vehicleMake.value=valueText(v.make||v.brand); els.vehicleModel.value=valueText(v.model||v.carModel); els.vehicleYear.value=v.year||''; els.vehiclePrice.value=v.price||''; els.vehicleCity.value=v.city||''; els.vehicleColor.value=v.color||''; els.vehicleRegisteredIn.value=v.registeredIn||v.registrationState||''; els.vehicleMileage.value=v.mileage||''; els.vehicleExtraInfo.value=t; els.postStatus.textContent=`Transcript: ${t}`;
-          }catch(e){els.postStatus.textContent=`Voice failed: ${e.message}`;} finally{mediaRecorder=null;audioChunks=[];}
-        };
-        mediaRecorder.start(); els.recordBtn.textContent='⏹ Stop Recording'; els.postStatus.textContent='Recording... tap Stop or wait 60 seconds.';
-        setTimeout(()=>{if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop();},60000);
-      }catch(e){els.postStatus.textContent='Microphone permission failed.';}
-    }
-
-    function bind(){
-      els.postVehicleBtn.onclick=()=>showPage('post'); els.backBtn.onclick=()=>showPage('home'); els.resetBtn.onclick=resetForm; els.saveBtn.onclick=savePost; els.recordBtn.onclick=startRecording; els.cameraBtn.onclick=()=>els.vehicleCamera.click();
-      els.searchBtn.onclick=()=>startNewSearch(parseSearch(els.homeSearchInput.value.trim()));
-      els.homeSearchInput.addEventListener('keydown',e=>{if(e.key==='Enter')els.searchBtn.click();});
-      els.vehicleImages.onchange=e=>addImages(e.target.files); els.vehicleCamera.onchange=e=>addImages(e.target.files);
-      els.closeDetail.onclick=()=>els.detailModal.classList.remove('active'); els.detailModal.onclick=e=>{if(e.target===els.detailModal)els.detailModal.classList.remove('active');};
-      els.expirySoldBtn.onclick=()=>updateDueVehicle('sold');
-      els.expiryAvailableBtn.onclick=()=>updateDueVehicle('available');
-
-      document.addEventListener('click',e=>{
-        const sold=e.target.closest('[data-sold]'),avail=e.target.closest('[data-available]');
-        if(sold||avail){const id=sold?sold.dataset.sold:avail.dataset.available;const posts=JSON.parse(localStorage.getItem(storageKey())||'[]');saveLocal(posts.map(c=>c.id!==id?c:(sold?{...c,status:'sold',active:false}:{...c,status:'available',active:true,nextCheckAt:Date.now()+Number(CONFIG.EXPIRY_MINUTES||10)*60*1000})));renderCurrent();return;}
-        const rem=e.target.closest('[data-remove-image]'); if(rem){selectedImages.splice(Number(rem.dataset.removeImage),1);renderImages();return;}
-        const card=e.target.closest('.car-card'); if(card&&!e.target.closest('button')){const car=[...getLocal(),...loadedCars][Number(card.dataset.index)]; if(car)openDetail(car);}
-      });
-
-      const observer=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)loadNextPage();},{rootMargin:'800px'});
-      observer.observe(els.scrollSentinel);
-      setInterval(showExpiryLock, 5000);
-      document.addEventListener('visibilitychange',()=>{if(!document.hidden)showExpiryLock();});
-    }
-
-    bind();
-    startNewSearch({});
+    const getLocal=()=>{try{return JSON.parse(localStorage.getItem(storageKey())||'[]').reverse()}catch(e){return[]}},saveLocal=p=>localStorage.setItem(storageKey(),JSON.stringify(p));
+    const getProfile=()=>{try{return JSON.parse(localStorage.getItem(profileKey())||'{}')}catch(e){return{}}},saveProfile=p=>localStorage.setItem(profileKey(),JSON.stringify(p));
+    function countUserPostsThisYear(){const y=new Date().getFullYear();return getLocal().filter(c=>new Date(c.createdAt||Date.now()).getFullYear()===y).length}
+    function isDealerLocal(c){return c.isDealer || (c.id&&String(c.id).startsWith('local_')&&Number(c.ownerPostCountThisYear||0)>3)}
+    function sellerName(c){if(isDealerLocal(c))return c.dealerId?.businessName||c.sellerName||'Dealer';return c.sellerName||'Private Seller'}
+    function sellerPhone(c){if(c.isDealer)return c.dealerId?.phone||'Phone hidden';return c.sellerPhone||c.phone||'Phone not public in API'}
+    function sellerAddress(c){return c.dealerId?.address||areaOf(c)||cityOf(c)}
+    function dealerBadge(c){return isDealerLocal(c)?'<span class="badge red">DEALER</span>':'<span class="badge green">PRIVATE</span>'}
+    function adBadge(c){const t=String(c.adType||'').toLowerCase().trim();if(t==='featured-pro')return'<span class="badge red">Featured Pro</span>';if(t==='featured')return'<span class="badge blue">Featured</span>';return''}
+    function money(v){const n=Number(v||0);if(!n)return'Price on Call';if(n>=100000){const l=n/100000;return`${Number.isInteger(l)?l:l.toFixed(1)} Lakh PKR`}return`PKR ${n.toLocaleString('en-PK')}`}
+    function showPage(n){['home','post','profile'].forEach(p=>els[p+'Page']?.classList.toggle('active',n===p));if(n==='home')renderCurrent()}
+    function parseSearch(text){const t=String(text||'').toLowerCase(),filters={};const brands=['toyota','honda','suzuki','kia','hyundai','mg','haval','chery','omoda','byd','ford','nissan','daihatsu','changan','proton','lexus','mercedes'];const cities=['lahore','rawalpindi','islamabad','karachi','peshawar','multan','faisalabad','quetta','sialkot','attock','khanewal'];const models=['accord','civic','city','corolla','yaris','alto','swift','cultus','mehran','wagon r','hiace','hilux','prado','fortuner','cortina','hs','h6'];let brand=brands.find(b=>t.includes(b)),city=cities.find(c=>t.includes(c)),model=models.find(m=>t.includes(m));if(brand)filters.brand=brand[0].toUpperCase()+brand.slice(1);if(city)filters.city=city[0].toUpperCase()+city.slice(1);if(model)filters.model=model.split(' ').map(x=>x[0].toUpperCase()+x.slice(1)).join(' ');const year=t.match(/\b(19[5-9]\d|20[0-3]\d)\b/);if(year)filters.year=year[1];if(!brand&&!city&&!model&&!year&&text.trim())filters.carName=text.trim();return filters}
+    function card(c,index){return`<article class="car-card" data-index="${index}"><img src="${esc(imageOf(c))}" alt="${esc(titleOf(c))}"><div><div class="badge-row">${dealerBadge(c)} ${adBadge(c)}</div><h3>${esc(titleOf(c))}</h3><div class="price">${esc(money(c.price))}</div><div class="meta">City: ${esc(cityOf(c))}</div><div class="meta">Color: ${esc(c.color||'-')}</div><div class="meta">Mileage: ${c.mileage?Number(c.mileage).toLocaleString('en-PK')+' KM':'-'}</div><div class="seller-box"><strong>${esc(sellerName(c))}</strong><br>Phone: ${esc(sellerPhone(c))}<br>Area: ${esc(sellerAddress(c))}</div></div></article>`}
+    async function fetchCars(filters={},page=1){const p=new URLSearchParams();Object.entries({...filters,page,limit:CONFIG.PAGE_LIMIT}).forEach(([k,v])=>{if(v!==undefined&&v!==null&&String(v).trim())p.set(k,String(v).trim())});const r=await fetch(`${CONFIG.CARS_API_URL}?${p.toString()}`,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error(`API error ${r.status}`);const j=await r.json();return{cars:Array.isArray(j.data)?j.data:[],pagination:j.pagination||{}}}
+    function renderCurrent(){const local=getLocal(),all=[...local,...loadedCars];els.results.innerHTML=all.length?all.map(card).join(''):'No cars found.';els.resultInfo.textContent=totalRemote?`Showing ${loadedCars.length} of ${totalRemote} matching DrivePK cars`:'';updateStats(local);els.loadMoreStatus.innerHTML=isLoading?'<span class="spinner"></span>Loading more cars...':(hasNext?'Scroll for more cars':(loadedCars.length?'All matching cars loaded.':''));showExpiryLock()}
+    async function startNewSearch(filters={}){currentFilters=filters;currentPage=1;hasNext=true;loadedCars=[];totalRemote=0;els.results.innerHTML='Loading cars...';await loadNextPage()}
+    async function loadNextPage(){if(isLoading||!hasNext)return;isLoading=true;renderCurrent();try{const{cars,pagination}=await fetchCars(currentFilters,currentPage);loadedCars=[...loadedCars,...cars];totalRemote=Number(pagination.total||totalRemote||cars.length);hasNext=Boolean(pagination.hasNext);currentPage++}catch(e){els.loadMoreStatus.textContent=`Could not load more cars: ${e.message}`;hasNext=false}finally{isLoading=false;renderCurrent()}}
+    function updateStats(local=getLocal()){els.totalCount.textContent=local.length;els.activeCount.textContent=local.filter(c=>c.status!=='sold').length;els.dueCount.textContent=getDueVehicles().length}
+    function getDueVehicles(){const now=Date.now();return getLocal().filter(c=>c.status==='available'&&c.active!==false&&Number(c.nextCheckAt||0)<=now)}
+    function showExpiryLock(){const due=getDueVehicles();if(!due.length){currentDueVehicle=null;els.expiryLock.classList.remove('active');return}currentDueVehicle=due[0];els.expiryVehicleInfo.innerHTML=`<strong>${esc(titleOf(currentDueVehicle))}</strong><br>Price: ${esc(money(currentDueVehicle.price))}<br>City: ${esc(cityOf(currentDueVehicle))}<br>Please confirm Sold or Still Available.`;els.expiryLock.classList.add('active')}
+    function updateDueVehicle(status){if(!currentDueVehicle)return;const posts=JSON.parse(localStorage.getItem(storageKey())||'[]').map(c=>{if(c.id!==currentDueVehicle.id)return c;if(status==='sold')return{...c,status:'sold',active:false,soldAt:new Date().toISOString()};return{...c,status:'available',active:true,nextCheckAt:Date.now()+CONFIG.EXPIRY_MINUTES*60*1000,lastConfirmedAt:new Date().toISOString()}});saveLocal(posts);currentDueVehicle=null;els.expiryLock.classList.remove('active');renderCurrent();showExpiryLock()}
+    function resetForm(){['vehicleMake','vehicleModel','vehicleYear','vehiclePrice','vehicleCity','vehicleColor','vehicleRegisteredIn','vehicleMileage','vehicleTransmission','vehicleFuelType','vehicleExtraInfo'].forEach(k=>els[k].value='');selectedImages=[];renderImages();els.postStatus.textContent='Ready to record'}
+    function renderImages(){if(!selectedImages.length){els.imagePreview.innerHTML='';els.imageStatus.textContent='No images selected.';return}els.imagePreview.innerHTML=selectedImages.map((i,n)=>`<div class="thumb"><img src="${esc(i.dataUrl)}"><button type="button" data-remove-image="${n}">×</button></div>`).join('');els.imageStatus.textContent=`${selectedImages.length}/20 images selected.`}
+    function addImages(files){const list=Array.from(files||[]).filter(f=>f.type.startsWith('image/')).slice(0,20-selectedImages.length);let done=0;if(!list.length)return renderImages();list.forEach(file=>{const reader=new FileReader();reader.onload=()=>{selectedImages.push({name:file.name,dataUrl:reader.result});done++;if(done===list.length)renderImages()};reader.readAsDataURL(file)})}
+    function savePost(){const p=getProfile();if(!p.name||!p.phone){showPage('profile');els.profileStatus.textContent='Save profile before posting vehicle.';return}if(!els.vehicleTransmission.value||!els.vehicleFuelType.value){els.postStatus.textContent='Transmission and Fuel Type are compulsory.';return}const posts=JSON.parse(localStorage.getItem(storageKey())||'[]'),now=Date.now(),count=countUserPostsThisYear()+1;posts.push({id:`local_${now}`,title:`${els.vehicleMake.value} ${els.vehicleModel.value} ${els.vehicleYear.value}`.trim(),brand:els.vehicleMake.value,carModel:els.vehicleModel.value,year:els.vehicleYear.value,price:Number(els.vehiclePrice.value||0),city:els.vehicleCity.value,location:{city:els.vehicleCity.value,area:p.city||''},color:els.vehicleColor.value,registrationState:els.vehicleRegisteredIn.value,mileage:Number(els.vehicleMileage.value||0),transmission:els.vehicleTransmission.value,fuelType:els.vehicleFuelType.value,description:els.vehicleExtraInfo.value,images:selectedImages.map(i=>i.dataUrl),status:'available',active:true,nextCheckAt:now+CONFIG.EXPIRY_MINUTES*60*1000,createdAt:new Date().toISOString(),sellerName:p.name,sellerPhone:p.phone,sellerWhatsapp:p.whatsapp,sellerEmail:p.email,isDealer:count>3,ownerPostCountThisYear:count});saveLocal(posts);resetForm();showPage('home')}
+    function openDetail(car){els.detailTitle.textContent=titleOf(car);els.detailBody.innerHTML=`<img src="${esc(imageOf(car))}"><div class="badge-row">${dealerBadge(car)} ${adBadge(car)}</div><div class="price">${esc(money(car.price))}</div><div class="detail-grid"><div><strong>City</strong>${esc(cityOf(car))}</div><div><strong>Area</strong>${esc(areaOf(car)||'-')}</div><div><strong>Year</strong>${esc(car.year||'-')}</div><div><strong>Mileage</strong>${car.mileage?Number(car.mileage).toLocaleString('en-PK')+' KM':'-'}</div><div><strong>Fuel</strong>${esc(car.fuelType||'-')}</div><div><strong>Transmission</strong>${esc(car.transmission||'-')}</div></div><div class="seller-box"><strong>Customer / Seller Details</strong><br>Type: ${isDealerLocal(car)?'Dealer':'Private Seller'}<br>Name: ${esc(sellerName(car))}<br>Phone: ${esc(sellerPhone(car))}<br>Area: ${esc(sellerAddress(car))}</div><p class="description">${esc(car.description||'No description available.')}</p>${car.id&&String(car.id).startsWith('local_')?`<div class="detail-actions"><button class="delete-btn" data-delete="${esc(car.id)}">Delete Ad</button><button class="green-btn" data-extend="${esc(car.id)}">Still Available</button></div>`:''}`;els.detailModal.classList.add('active')}
+    async function startRecording(mode='post'){if(!navigator.mediaDevices||!window.MediaRecorder){(mode==='search'?els.resultInfo:els.postStatus).textContent='This browser does not support recording.';return}if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return}audioChunks=[];try{mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});mediaRecorder=new MediaRecorder(mediaStream);mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)audioChunks.push(e.data)};mediaRecorder.onstop=async()=>{mediaStream.getTracks().forEach(t=>t.stop());els.recordBtn.textContent='🎙 Start Recording';try{const blob=new Blob(audioChunks,{type:mediaRecorder.mimeType||'audio/webm'}),form=new FormData();form.append('audio',blob,'drivepk-bolo.webm');form.append('task',mode==='search'?'vehicle_search':'vehicle_post');const res=await fetch(CONFIG.TRANSCRIBE_URL,{method:'POST',body:form}),data=await res.json();if(!res.ok)throw new Error(data.error||'Transcription failed');const t=data.roman_transcript||data.transcript||data.text||'';if(mode==='search'){els.homeSearchInput.value=t;startNewSearch({...parseSearch(t),...data.filters});return}const v=data.vehicle||{};els.vehicleMake.value=valueText(v.make||v.brand);els.vehicleModel.value=valueText(v.model||v.carModel);els.vehicleYear.value=v.year||'';els.vehiclePrice.value=v.price||'';els.vehicleCity.value=v.city||'';els.vehicleColor.value=v.color||'';els.vehicleRegisteredIn.value=v.registeredIn||v.registrationState||'';els.vehicleMileage.value=v.mileage||'';if(v.transmission)els.vehicleTransmission.value=valueText(v.transmission);if(v.fuelType)els.vehicleFuelType.value=valueText(v.fuelType);els.vehicleExtraInfo.value=t;els.postStatus.textContent=`Transcript: ${t}`}catch(e){(mode==='search'?els.resultInfo:els.postStatus).textContent=`Voice failed: ${e.message}`}finally{mediaRecorder=null;audioChunks=[]}};mediaRecorder.start();if(mode==='post')els.recordBtn.textContent='⏹ Stop Recording';(mode==='search'?els.resultInfo:els.postStatus).textContent='Recording... tap again to stop or wait 60 seconds.';setTimeout(()=>{if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop()},60000)}catch(e){(mode==='search'?els.resultInfo:els.postStatus).textContent='Microphone permission failed.'}}
+    function loadProfile(){const p=getProfile();els.profileName.value=p.name||'';els.profilePhone.value=p.phone||'';els.profileWhatsapp.value=p.whatsapp||'';els.profileCity.value=p.city||'';els.profileEmail.value=p.email||''}
+    function bind(){els.postVehicleBtn.onclick=()=>showPage('post');els.backBtn.onclick=()=>showPage('home');els.profileTopBtn.onclick=()=>{loadProfile();showPage('profile')};els.profileBackBtn.onclick=()=>showPage('home');els.resetBtn.onclick=resetForm;els.saveBtn.onclick=savePost;els.recordBtn.onclick=()=>startRecording('post');els.voiceSearchBtn.onclick=()=>startRecording('search');els.cameraBtn.onclick=()=>els.vehicleCamera.click();els.searchBtn.onclick=()=>startNewSearch(parseSearch(els.homeSearchInput.value.trim()));els.homeSearchInput.addEventListener('keydown',e=>{if(e.key==='Enter')els.searchBtn.click()});els.vehicleImages.onchange=e=>addImages(e.target.files);els.vehicleCamera.onchange=e=>addImages(e.target.files);els.closeDetail.onclick=()=>els.detailModal.classList.remove('active');els.expirySoldBtn.onclick=()=>updateDueVehicle('sold');els.expiryAvailableBtn.onclick=()=>updateDueVehicle('available');els.saveProfileBtn.onclick=()=>{saveProfile({name:els.profileName.value.trim(),phone:els.profilePhone.value.trim(),whatsapp:els.profileWhatsapp.value.trim(),city:els.profileCity.value.trim(),email:els.profileEmail.value.trim()});els.profileStatus.textContent='Profile saved.'};els.clearProfileBtn.onclick=()=>{localStorage.removeItem(profileKey());loadProfile();els.profileStatus.textContent='Profile cleared.'};document.addEventListener('click',e=>{const del=e.target.closest('[data-delete]'),ext=e.target.closest('[data-extend]');if(del||ext){const id=(del||ext).dataset.delete||(del||ext).dataset.extend,posts=JSON.parse(localStorage.getItem(storageKey())||'[]').filter(c=>!(del&&c.id===id)).map(c=>ext&&c.id===id?{...c,status:'available',active:true,nextCheckAt:Date.now()+CONFIG.EXPIRY_MINUTES*60*1000}:c);saveLocal(posts);els.detailModal.classList.remove('active');renderCurrent();return}const rem=e.target.closest('[data-remove-image]');if(rem){selectedImages.splice(Number(rem.dataset.removeImage),1);renderImages();return}const card=e.target.closest('.car-card');if(card&&!e.target.closest('button')){const car=[...getLocal(),...loadedCars][Number(card.dataset.index)];if(car)openDetail(car)}});const observer=new IntersectionObserver(en=>{if(en[0].isIntersecting)loadNextPage()},{rootMargin:'800px'});observer.observe(els.scrollSentinel);setInterval(showExpiryLock,5000)}
+    bind();loadProfile();startNewSearch({});
   })();
   </script>
 </body>
